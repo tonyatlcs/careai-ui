@@ -1,0 +1,335 @@
+$card-border: color-mix(in oklch, var(--border) 70%, transparent);
+$day-selected: #4f46e5;
+$day-selected-hover: #4f46e5;
+$popover-bg: #1a2332;
+$popover-border: color-mix(in oklch, #334155 80%, transparent);
+$popover-muted: #94a3b8;
+$popover-button: #1e293b;
+$popover-button-hover: #334155;
+
+.card {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  border-radius: 1rem;
+  border: 1px solid $card-border;
+  background-color: var(--card);
+  padding: 0.875rem 1rem 0.875rem;
+
+  @media (min-width: 640px) {
+    padding: 1rem 1.125rem 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 1.125rem 1.25rem 1.125rem;
+  }
+}
+
+.pickerWrap {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  flex-direction: column;
+}
+
+.calendarRoot {
+  width: 100%;
+}
+
+.months {
+  position: relative;
+  width: 100%;
+}
+
+.month {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.75rem;
+
+  > :last-child {
+    grid-column: span 3;
+  }
+}
+
+.monthCaption {
+  display: flex;
+  justify-content: center;
+}
+
+.captionLabel {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.navButton {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in oklch, var(--border) 80%, transparent);
+  background-color: color-mix(in oklch, var(--muted) 40%, transparent);
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in oklch, var(--muted) 80%, transparent);
+  }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+}
+
+.monthGrid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.weekday {
+  width: 14.28%;
+  padding-bottom: 0.375rem;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.weekRow {
+  td {
+    height: 2.5rem;
+    padding: 0;
+    vertical-align: middle;
+  }
+}
+
+.dayCell {
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.dayButton {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.weeksBody {
+  width: 100%;
+}
+
+.dayOutside {
+  color: var(--muted-foreground);
+}
+
+.daySelected {
+  background-color: $day-selected;
+  color: #fff;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $day-selected-hover;
+  }
+}
+
+.dayDefault {
+  color: var(--foreground);
+
+  &:hover,
+  &:focus-visible {
+    background-color: color-mix(in oklch, var(--muted) 70%, transparent);
+  }
+}
+
+.dayDisabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.dayLabel {
+  line-height: 1;
+}
+
+.eventDot {
+  margin-top: 0.125rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+}
+
+.eventDotOnSelected {
+  background-color: #fcd34d;
+}
+
+.eventDotDefault {
+  background-color: #fbbf24;
+}
+
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+}
+
+.popoverContent {
+  z-index: 50;
+  width: min(100vw - 2rem, 20rem);
+  max-width: calc(100vw - 2rem);
+  border-radius: 0.75rem;
+  border: 1px solid $popover-border;
+  background-color: $popover-bg;
+  padding: 1rem;
+  color: #fff;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.2),
+    0 4px 6px -4px rgb(0 0 0 / 0.2);
+  outline: none;
+  transform-origin: center;
+
+  &[data-state="open"] {
+    animation: activityPopoverIn 0.15s ease-out;
+  }
+}
+
+@keyframes activityPopoverIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popoverArrow {
+  fill: $popover-bg;
+}
+
+.popoverTitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.eventListEmpty {
+  font-size: 0.875rem;
+  color: $popover-muted;
+}
+
+.eventRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.eventDotSwatch {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.eventDotSwatchWhite {
+  background-color: #fff;
+}
+
+.eventDotSwatchTeal {
+  background-color: #2dd4bf;
+}
+
+.eventDotSwatchAmber {
+  background-color: #fcd34d;
+}
+
+.eventTitle {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-weight: 500;
+}
+
+.eventTime {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: $popover-muted;
+}
+
+.addButton {
+  margin-top: 1rem;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: 0;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: #fff;
+  background-color: $popover-button;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: $popover-button-hover;
+  }
+}
+
+.addButtonIcon {
+  width: 1rem;
+  height: 1rem;
+}

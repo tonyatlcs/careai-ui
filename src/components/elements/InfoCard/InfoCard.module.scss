@@ -1,0 +1,146 @@
+$primary: #4f46e5;
+$border-indigo: #e0e7ff;
+$surface-indigo: #eef2ff;
+$icon-muted: #a5b4fc;
+$icon-strong: #6366f1;
+
+$trend-up-border: #bbf7d0;
+$trend-up-bg: #f0fdf4;
+$trend-up-text: #10b981;
+
+$trend-down-border: #fecaca;
+$trend-down-bg: #fef2f2;
+$trend-down-text: #ef4444;
+
+.article {
+  box-sizing: border-box;
+  
+  overflow: hidden;
+  padding: 1rem;
+  border: 1px solid $border-indigo;
+  border-radius: 1rem;
+  background-color: #fff;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: $surface-indigo;
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerMain {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.iconWrap {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  color: $icon-strong;
+  background-color: $border-indigo;
+}
+
+.cardIcon {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5rem;
+  color: $primary;
+}
+
+.menuButton {
+  flex-shrink: 0;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  color: $icon-muted;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $icon-strong;
+  }
+}
+
+.valueRow {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.value {
+  margin: 0;
+  min-width: 0;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 2.5rem;
+  color: $primary;
+}
+
+.trend {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  width: 57.56px;
+  height: 1.25rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.trendUp {
+  color: $trend-up-text;
+  background-color: $trend-up-bg;
+  border: 1px solid $trend-up-border;
+}
+
+.trendDown {
+  color: $trend-down-text;
+  background-color: $trend-down-bg;
+  border: 1px solid $trend-down-border;
+}
+
+.trendIcon {
+  display: block;
+  flex-shrink: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}

@@ -1,0 +1,176 @@
+$card-border: #e5e7eb;
+$title: #111827;
+$muted: #9ca3af;
+$legend-muted: #6b7280;
+$icon-yellow: #fef08a;
+$icon-yellow-fg: #854d0e;
+$range-border: #d1d5db;
+$range-bg: #ffffff;
+
+.root {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.875rem 1rem 0.875rem;
+  border: 1px solid $card-border;
+  border-radius: 1rem;
+  background-color: #ffffff;
+}
+
+.topRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.iconWrap {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  color: $icon-yellow-fg;
+  background-color: $icon-yellow;
+}
+
+.titleIcon {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  color: $title;
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rangeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid $range-border;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: $legend-muted;
+  background-color: $range-bg;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    border-color: #9ca3af;
+    background-color: #f9fafb;
+  }
+}
+
+.rangeChevron {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: $muted;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid $range-border;
+  border-radius: 0.5rem;
+  color: $legend-muted;
+  background-color: $range-bg;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: #9ca3af;
+    color: #374151;
+    background-color: #f9fafb;
+  }
+}
+
+.uploadIcon {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: $legend-muted;
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.swatchPatients {
+  background-color: #7367f0;
+}
+
+.swatchOutpatient {
+  background-color: #e8eaf6;
+}
+
+.chartWrap {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  min-height: 160px;
+  min-width: 0;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
