@@ -4,7 +4,6 @@ $widgets-breakpoint: 1024px;
   margin-top: 1.5rem;
   display: grid;
   gap: 1.5rem;
-  
 
   @media (min-width: $widgets-breakpoint) {
     grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
@@ -13,10 +12,10 @@ $widgets-breakpoint: 1024px;
 }
 
 .widgetsColumn {
+  min-width: 0;
 
   @media (min-width: $widgets-breakpoint) {
     width: 100%;
-    height: 100%;
   }
 }
 

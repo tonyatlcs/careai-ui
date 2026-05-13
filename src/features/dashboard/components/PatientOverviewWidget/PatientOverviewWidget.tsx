@@ -120,7 +120,7 @@ export function PatientOverviewWidget({
               size: 11,
               family: "Inter, ui-sans-serif, system-ui, sans-serif",
             },
-            padding: 8,
+            padding: 4,
           },
         },
         y: {
@@ -139,13 +139,13 @@ export function PatientOverviewWidget({
               size: 11,
               family: "Inter, ui-sans-serif, system-ui, sans-serif",
             },
-            padding: 10,
+            padding: 4,
             callback: (tickValue) => formatYTick(tickValue as number),
             stepSize: 20_000,
           },
         },
       },
-      layout: { padding: { top: 4, right: 4, left: 0, bottom: 0 } },
+      layout: { padding: { top: 0, right: 0, left: 0, bottom: 0 } },
     };
 
     chartRef.current = new Chart(ctx, {
