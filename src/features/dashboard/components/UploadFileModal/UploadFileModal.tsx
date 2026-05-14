@@ -16,7 +16,7 @@ import { setDocumentIds } from "@/features/documents/documentsSlice";
 import type { AppDispatch, RootState } from "@/store";
 import { CloudUpload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, useStore } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import styles from "./UploadFileModal.module.scss";
 import {
@@ -41,6 +41,11 @@ const getUploadedDocumentIds = (
     return [];
   }
 
+  const fromBatch = response.batch?.documents;
+  if (Array.isArray(fromBatch) && fromBatch.length > 0) {
+    return fromBatch.map(({ id }) => id);
+  }
+
   if (Array.isArray(response.documentIds)) {
     return response.documentIds;
   }
@@ -59,6 +64,7 @@ export function UploadFileModal({
 }: UploadFileModalProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const store = useStore<RootState>();
   const fileCount = useSelector(
     (state: RootState) => state.dashboard.fileCount,
   );
@@ -123,7 +129,12 @@ export function UploadFileModal({
       const uploadedDocumentIds = getUploadedDocumentIds(info.response);
 
       if (info.ok && uploadedDocumentIds.length > 0) {
-        dispatch(setDocumentIds(uploadedDocumentIds));
+        const prev = store.getState().documents.documentIds;
+        dispatch(
+          setDocumentIds([
+            ...new Set([...prev, ...uploadedDocumentIds]),
+          ]),
+        );
       }
 
       setSharedProgress(100);
@@ -142,7 +153,7 @@ export function UploadFileModal({
         }),
       );
     },
-    [dispatch],
+    [dispatch, store],
   );
 
   const togglePause = useCallback((rowId: string) => {

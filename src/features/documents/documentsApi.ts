@@ -32,6 +32,19 @@ export type ListDocumentsResponse = {
   hasPreviousPage: boolean;
 };
 
+/** Prefer API `documentIds` when present; otherwise derive from list rows. */
+export function documentIdsFromListData(
+  data: ListDocumentsResponse | undefined,
+): string[] {
+  if (data == null) {
+    return [];
+  }
+  if (Array.isArray(data.documentIds) && data.documentIds.length > 0) {
+    return data.documentIds;
+  }
+  return data.documents.map((doc) => doc.id).filter((id): id is string => Boolean(id));
+}
+
 export type ProcessDocumentsRequest = {
   documentIds: string[];
 };

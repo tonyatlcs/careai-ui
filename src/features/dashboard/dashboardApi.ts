@@ -3,6 +3,13 @@ import { rootApi } from "@/store/rootApi";
 export type CreateDocumentBatchRequest = FormData;
 
 export type CreateDocumentBatchResponse = {
+  status: "accepted";
+  batch: {
+    id: string;
+    documentCount: number;
+    documents: Array<{ id: string; filename: string; mimetype: string }>;
+  };
+  /** Legacy/alternate shapes kept for compatibility if the API changes. */
   documentIds?: string[];
   documents?: Array<{ id: string }>;
 };

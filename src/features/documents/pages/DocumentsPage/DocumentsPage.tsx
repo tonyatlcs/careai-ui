@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pagination } from "@/components/elements/Pagination/Pagination";
 import {
   DocumentsTable,
   getDocumentRowKey,
 } from "@/features/documents/Components/DocumentsTable/DocumentsTable";
 import {
+  documentIdsFromListData,
+  documentsApi,
   useListDocumentsQuery,
   useProcessDocumentsMutation,
 } from "@/features/documents/documentsApi";
@@ -12,10 +14,13 @@ import { setDocumentIds } from "@/features/documents/documentsSlice";
 import { Button } from "@/components/ui/button";
 import styles from "@/features/documents/pages/DocumentsPage/DocumentsPage.module.scss";
 import { Pill } from "@/components/elements/Pill/Pill";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "@/store";
 
 const DOCUMENTS_PAGE_SIZE = 13;
+
+/** Aligns with worker progress throttling (~1s); keeps list progress near real-time without SSE. */
+const DOCUMENT_LIST_POLL_MS = 1200;
 
 export const DocumentsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,9 +28,21 @@ export const DocumentsPage: React.FC = () => {
   const [selectedDocumentKeys, setSelectedDocumentKeys] = useState<string[]>(
     [],
   );
-  const { data, isLoading, isError } = useListDocumentsQuery({
-    page,
-    limit: DOCUMENTS_PAGE_SIZE,
+  const listQueryArg = useMemo(
+    () => ({ page, limit: DOCUMENTS_PAGE_SIZE }),
+    [page],
+  );
+  const listQueryState = useSelector(
+    documentsApi.endpoints.listDocuments.select(listQueryArg),
+  );
+  const listPollMs =
+    listQueryState.data?.documents?.some((d) => d.status === "processing") ===
+    true
+      ? DOCUMENT_LIST_POLL_MS
+      : 0;
+  const { data, isLoading, isError } = useListDocumentsQuery(listQueryArg, {
+    pollingInterval: listPollMs,
+    skipPollingIfUnfocused: true,
   });
   const [processDocuments, { isLoading: isProcessingDocuments }] =
     useProcessDocumentsMutation();
@@ -47,14 +64,14 @@ export const DocumentsPage: React.FC = () => {
   useEffect(() => {
     const visibleDocumentKeys = new Set(documents.map(getDocumentRowKey));
 
-    dispatch(setDocumentIds(data?.documentIds ?? []));
+    dispatch(setDocumentIds(documentIdsFromListData(data)));
 
     setSelectedDocumentKeys((currentSelectedDocumentKeys) =>
       currentSelectedDocumentKeys.filter((documentKey) =>
         visibleDocumentKeys.has(documentKey),
       ),
     );
-  }, [data?.documentIds, dispatch, documents]);
+  }, [data, dispatch, documents]);
 
   const handleProcessDocuments = async () => {
     if (selectedDocumentKeys.length === 0) return;
