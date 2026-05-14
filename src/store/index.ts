@@ -10,6 +10,7 @@ import {
   REHYDRATE,
 } from "redux-persist";
 import { dashboardReducer } from "@/features/dashboard/dashboardSlice";
+import { rootApi } from "@/store/rootApi";
 
 /** Avoid `redux-persist/lib/storage` default import — Vite ESM/CJS interop can yield a non-object and break `getItem`. */
 const persistStorage = {
@@ -33,6 +34,7 @@ const persistStorage = {
 
 const rootReducer = combineReducers({
   dashboard: dashboardReducer,
+  [rootApi.reducerPath]: rootApi.reducer,
 });
 
 const persistedReducer = persistReducer(
@@ -50,7 +52,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(rootApi.middleware),
 });
 
 export const persistor = persistStore(store);
