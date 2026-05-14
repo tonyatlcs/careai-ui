@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { DocumentDropzone } from "@/features/dashboard/components/DocumentDropzone/DocumentDropzone";
 import { FileInfoRow } from "@/features/dashboard/components/FileInfoRow/FileInfoRow";
 import { setFileCount } from "@/features/dashboard/dashboardSlice";
+import type { CreateDocumentBatchResponse } from "@/features/dashboard/dashboardApi";
+import { setDocumentIds } from "@/features/documents/documentsSlice";
 import type { AppDispatch, RootState } from "@/store";
 import { CloudUpload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -30,6 +32,24 @@ type UploadFileModalProps = {
   onOpenChange: (open: boolean) => void;
   /** Invoked when the user selects one or more valid files (PDF, JPG, PNG, DOCX, within size limit). */
   onUpload?: (files: File[]) => void;
+};
+
+const getUploadedDocumentIds = (
+  response?: CreateDocumentBatchResponse,
+): string[] => {
+  if (!response) {
+    return [];
+  }
+
+  if (Array.isArray(response.documentIds)) {
+    return response.documentIds;
+  }
+
+  if (Array.isArray(response.documents)) {
+    return response.documents.map(({ id }) => id);
+  }
+
+  return [];
 };
 
 export function UploadFileModal({
@@ -94,8 +114,18 @@ export function UploadFileModal({
   );
 
   const handleUploadSettled = useCallback(
-    (info: { ok: boolean; files: File[] }) => {
+    (info: {
+      ok: boolean;
+      files: File[];
+      response?: CreateDocumentBatchResponse;
+    }) => {
       const touched = new Set(info.files.map((f) => fileKey(f)));
+      const uploadedDocumentIds = getUploadedDocumentIds(info.response);
+
+      if (info.ok && uploadedDocumentIds.length > 0) {
+        dispatch(setDocumentIds(uploadedDocumentIds));
+      }
+
       setSharedProgress(100);
       setRows((prev) =>
         prev.map((row) => {
@@ -112,7 +142,7 @@ export function UploadFileModal({
         }),
       );
     },
-    [],
+    [dispatch],
   );
 
   const togglePause = useCallback((rowId: string) => {

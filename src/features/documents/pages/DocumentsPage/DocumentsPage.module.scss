@@ -1,0 +1,109 @@
+.pageContainer {
+  min-height: 100vh;
+  
+
+  .header {
+    color: #0F172A;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 32px; /* 133.333% */
+  }
+
+  .tablePanel {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background-color: var(--card);
+    overflow: hidden;
+  }
+
+  .tablePanelBody {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    border-radius: 8px;
+  }
+
+  .tableHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 5.375rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+  }
+
+  .tableHeaderTitleGroup,
+  .tableHeaderActions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .tableHeaderTitle {
+    margin: 0;
+    color: #0f172a;
+    font-family: Inter, sans-serif;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.5rem;
+    letter-spacing: 0;
+  }
+
+  .tableHeaderCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.25rem 0.875rem;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+    white-space: nowrap;
+  }
+
+  .exportButton,
+  .approveButton {
+    min-height: 2.75rem;
+    padding-right: 1.25rem;
+    padding-left: 1.25rem;
+    border-radius: 0.625rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5rem;
+  }
+
+  .exportButton {
+    border-color: #e2e8f0;
+    color: #475569;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+  }
+
+  .approveButton {
+    background: oklch(0.52 0.19 278) !important;
+    border-color: transparent !important;
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+
+    &:hover {
+      color: oklch(0.99 0 0) !important;
+      background: oklch(0.46 0.2 278) !important;
+    }
+  }
+
+  .feedback {
+    margin: 0;
+    padding: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+}

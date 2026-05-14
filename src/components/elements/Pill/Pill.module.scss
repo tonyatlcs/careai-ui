@@ -12,16 +12,23 @@ $warning-text: #f59e0b;
 
 .pill {
   display: inline-flex;
-  flex-shrink: 0;
+  flex-shrink: 1;
   align-items: center;
   justify-content: center;
   gap: 0.125rem;
-  width: 57.56px;
-  height: 1.25rem;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 1.25rem;
+  padding: 0.3125rem 0.75rem;
   border-radius: 9999px;
   font-size: 10px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &.up {
     color: $trend-up-text;
@@ -36,9 +43,6 @@ $warning-text: #f59e0b;
   }
 
   &.neutral {
-    width: auto;
-    height: auto;
-    padding: 2px 8px;
     background: #f3f4f6;
   }
 

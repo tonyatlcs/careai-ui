@@ -7,6 +7,7 @@ export type DocumentProcessingStatus =
   | "failed";
 
 export type DocumentListItem = {
+  id: string;
   name: string;
   createdAt: string;
   patient?: string;
@@ -21,6 +22,7 @@ export type ListDocumentsParams = {
 };
 
 export type ListDocumentsResponse = {
+  documentIds: string[];
   documents: DocumentListItem[];
   total: number;
   page: number;
@@ -30,21 +32,40 @@ export type ListDocumentsResponse = {
   hasPreviousPage: boolean;
 };
 
+export type ProcessDocumentsRequest = {
+  documentIds: string[];
+};
+
+export type ProcessDocumentsResponse = unknown;
+
 export const documentsApi = rootApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
     listDocuments: builder.query<ListDocumentsResponse, ListDocumentsParams>({
-      query: ({ page, limit = 20 }) => ({
+      query: ({ page, limit = 13 }) => ({
         url: "/documents",
         method: "GET",
         params: { page, limit },
       }),
-      providesTags: (_result, _error, { page, limit = 20 }) => [
+      providesTags: (_result, _error, { page, limit = 13 }) => [
         { type: "Document-processing", id: `LIST-${page}-${limit}` },
         { type: "Document-processing", id: "LIST" },
       ],
     }),
+
+    processDocuments: builder.mutation<
+      ProcessDocumentsResponse,
+      ProcessDocumentsRequest
+    >({
+      query: (body) => ({
+        url: "/documents/process",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Document-processing"],
+    }),
   }),
 });
 
-export const { useListDocumentsQuery } = documentsApi;
+export const { useListDocumentsQuery, useProcessDocumentsMutation } =
+  documentsApi;

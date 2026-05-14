@@ -2,13 +2,20 @@ import {
   Dropzone,
   type DropzoneProps,
 } from "@/components/elements/Dropzone/Dropzone";
-import { useCreateDocumentBatchMutation } from "@/features/dashboard/dashboardApi";
+import {
+  type CreateDocumentBatchResponse,
+  useCreateDocumentBatchMutation,
+} from "@/features/dashboard/dashboardApi";
 import { useCallback } from "react";
 
 /** Dashboard document picker; wraps the shared {@link Dropzone} with the same API. */
 export type DocumentDropzoneProps = DropzoneProps & {
   /** Fires after the batch upload request finishes (success or failure). */
-  onUploadSettled?: (info: { ok: boolean; files: File[] }) => void;
+  onUploadSettled?: (info: {
+    ok: boolean;
+    files: File[];
+    response?: CreateDocumentBatchResponse;
+  }) => void;
 };
 
 export function DocumentDropzone({
@@ -34,8 +41,8 @@ export function DocumentDropzone({
 
       void createDocumentBatch(formData)
         .unwrap()
-        .then(() => {
-          onUploadSettled?.({ ok: true, files: acceptedFiles });
+        .then((response) => {
+          onUploadSettled?.({ ok: true, files: acceptedFiles, response });
         })
         .catch(() => {
           onUploadSettled?.({ ok: false, files: acceptedFiles });

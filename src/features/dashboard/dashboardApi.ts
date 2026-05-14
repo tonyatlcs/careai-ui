@@ -2,7 +2,10 @@ import { rootApi } from "@/store/rootApi";
 
 export type CreateDocumentBatchRequest = FormData;
 
-export type CreateDocumentBatchResponse = unknown;
+export type CreateDocumentBatchResponse = {
+  documentIds?: string[];
+  documents?: Array<{ id: string }>;
+};
 
 export const dashboardApi = rootApi.injectEndpoints({
   overrideExisting: true,

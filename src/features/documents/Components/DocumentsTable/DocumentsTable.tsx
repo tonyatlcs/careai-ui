@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { EllipsisIcon, EyeIcon } from "lucide-react";
 import { FileTypeIcon } from "@/features/dashboard/components/FileTypeIcon/FileTypeIcon";
 import { fileKindForName } from "@/features/dashboard/components/UploadFileModal/utils/FileModal.util";
 import type { DocumentListItem } from "@/features/documents/documentsApi";
-import styles from "./DocumentsTable.module.scss";
+import styles from "@/features/documents/Components/DocumentsTable/DocumentsTable.module.scss";
 import { Pill, type PillVariant } from "@/components/elements/Pill/Pill";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,13 +12,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { categoryDisplayLabels } from "@/features/documents/Components/DocumentsTable/DocumentTypes";
 
 type DocumentsTableProps = {
   rows: DocumentListItem[];
-  allRowsSelected?: boolean;
-  hasSelectedRows?: boolean;
+  selectedRowKeys?: string[];
   isSelectionDisabled?: boolean;
-  onSelectAllRowsChange?: (selected: boolean) => void;
+  onSelectedRowKeysChange?: (selectedRowKeys: string[]) => void;
 };
 
 type HeaderSelectionCheckboxProps = {
@@ -27,8 +27,6 @@ type HeaderSelectionCheckboxProps = {
   indeterminate: boolean;
   onCheckedChange?: (checked: boolean) => void;
 };
-
-const MAX_VISIBLE_ROWS = 13;
 
 function HeaderSelectionCheckbox({
   checked,
@@ -132,27 +130,66 @@ function getStatusPillVariant(status: DocumentListItem["status"]): PillVariant {
   }
 }
 
+function formatStatusForDisplay(status: DocumentListItem["status"]): string {
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "processing":
+      return "Processing";
+    case "completed":
+      return "Completed";
+    case "failed":
+      return "Failed";
+    default:
+      return status;
+  }
+}
+
+function formatCategoryForDisplay(category?: string | null): string {
+  if (!category) {
+    return "Unknown";
+  }
+
+  return categoryDisplayLabels[category] ?? category;
+}
+
+export function getDocumentRowKey(row: DocumentListItem) {
+  return row.id;
+}
+
 export function DocumentsTable({
   rows,
-  allRowsSelected,
-  hasSelectedRows = false,
+  selectedRowKeys = [],
   isSelectionDisabled = false,
-  onSelectAllRowsChange,
+  onSelectedRowKeysChange,
 }: DocumentsTableProps) {
-  const [uncontrolledAllRowsSelected, setUncontrolledAllRowsSelected] =
-    useState(false);
-  const isControlled = allRowsSelected !== undefined;
-  const isAllRowsSelected = isControlled
-    ? allRowsSelected
-    : uncontrolledAllRowsSelected;
-  const visibleRows = rows.slice(0, MAX_VISIBLE_ROWS);
+  const selectedRowKeySet = new Set(selectedRowKeys);
+  const selectableRowKeys = rows.map(getDocumentRowKey);
+  const isAllRowsSelected =
+    selectableRowKeys.length > 0 &&
+    selectableRowKeys.every((rowKey) => selectedRowKeySet.has(rowKey));
+  const hasSelectedRows = selectableRowKeys.some((rowKey) =>
+    selectedRowKeySet.has(rowKey),
+  );
 
   const handleSelectAllRowsChange = (selected: boolean) => {
-    if (!isControlled) {
-      setUncontrolledAllRowsSelected(selected);
+    onSelectedRowKeysChange?.(selected ? selectableRowKeys : []);
+  };
+
+  const handleSelectRowChange = (rowKey: string, selected: boolean) => {
+    const nextSelectedRowKeys = new Set(selectedRowKeys);
+
+    if (selected) {
+      nextSelectedRowKeys.add(rowKey);
+    } else {
+      nextSelectedRowKeys.delete(rowKey);
     }
 
-    onSelectAllRowsChange?.(selected);
+    onSelectedRowKeysChange?.(
+      selectableRowKeys.filter((selectableRowKey) =>
+        nextSelectedRowKeys.has(selectableRowKey),
+      ),
+    );
   };
 
   return (
@@ -179,7 +216,7 @@ export function DocumentsTable({
           </tr>
         </thead>
         <tbody className={styles.tableBody}>
-          {visibleRows.length === 0 ? (
+          {rows.length === 0 ? (
             <tr className={styles.bodyRow}>
               <td
                 className={`${styles.bodyCell} ${styles.emptyCell}`}
@@ -189,76 +226,90 @@ export function DocumentsTable({
               </td>
             </tr>
           ) : (
-            visibleRows.map((row) => (
-              <tr
-                className={styles.bodyRow}
-                key={`${row.name}-${row.createdAt}`}
-              >
-                <td className={`${styles.bodyCell} ${styles.selectBodyCell}`}>
-                  <input
-                    aria-label={`Select ${row.name}`}
-                    className={styles.selectAllCheckbox}
-                    disabled={isSelectionDisabled}
-                    type="checkbox"
-                  />
-                </td>
-                <td className={`${styles.bodyCell} ${styles.documentNameCell}`}>
-                  <div className={styles.documentName}>
-                    <FileTypeIcon
-                      fileName={row.name}
-                      kind={fileKindForName(row.name)}
-                      size="md"
+            rows.map((row) => {
+              const rowKey = getDocumentRowKey(row);
+
+              return (
+                <tr className={styles.bodyRow} key={rowKey}>
+                  <td className={`${styles.bodyCell} ${styles.selectBodyCell}`}>
+                    <input
+                      aria-label={`Select ${row.name}`}
+                      checked={selectedRowKeySet.has(rowKey)}
+                      className={styles.selectAllCheckbox}
+                      disabled={isSelectionDisabled}
+                      onChange={(event) =>
+                        handleSelectRowChange(rowKey, event.target.checked)
+                      }
+                      type="checkbox"
                     />
-                    <div className={styles.documentNameText}>
-                      <p className={styles.documentNameValue} title={row.name}>
-                        {row.name}
-                      </p>
-                      <time
-                        className={styles.documentTimestamp}
-                        dateTime={row.createdAt}
-                      >
-                        {formatDocumentTimestamp(row.createdAt)}
-                      </time>
+                  </td>
+                  <td
+                    className={`${styles.bodyCell} ${styles.documentNameCell}`}
+                  >
+                    <div className={styles.documentName}>
+                      <FileTypeIcon
+                        fileName={row.name}
+                        kind={fileKindForName(row.name)}
+                        size="md"
+                      />
+                      <div className={styles.documentNameText}>
+                        <p
+                          className={styles.documentNameValue}
+                          title={row.name}
+                        >
+                          {row.name}
+                        </p>
+                        <time
+                          className={styles.documentTimestamp}
+                          dateTime={row.createdAt}
+                        >
+                          {formatDocumentTimestamp(row.createdAt)}
+                        </time>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className={`${styles.bodyCell} ${styles.mutedCell}`}>
-                  <Pill variant="warning">{row.category ?? "Unknown"}</Pill>
-                </td>
-                <td className={`${styles.bodyCell} ${styles.mutedCell}`}>
-                  <Pill variant="warning">{row.category ?? "Unknown"}</Pill>
-                </td>
-                <td className={`${styles.bodyCell} ${styles.numericCell}`}>
-                  <Pill variant={getProgressPillVariant(row.progress)}>
-                    {row.progress == null ? "Unknown" : `${row.progress}%`}
-                  </Pill>
-                </td>
-                <td className={`${styles.bodyCell} ${styles.statusCell}`}>
-                  <Pill variant={getStatusPillVariant(row.status)}>
-                    {row.status}
-                  </Pill>
-                </td>
-                <td className={`${styles.bodyCell} ${styles.actionsBodyCell}`}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        aria-label={`Open actions for ${row.name}`}
-                        size="icon-sm"
-                        variant="ghost"
-                      >
-                        <EllipsisIcon />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <EyeIcon />
-                        View document
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))
+                  </td>
+                  <td className={`${styles.bodyCell} ${styles.mutedCell}`}>
+                    <Pill variant="neutral">{row.patient ?? "Unknown"}</Pill>
+                  </td>
+                  <td className={`${styles.bodyCell} ${styles.mutedCell}`}>
+                    <Pill variant="warning">
+                      {formatCategoryForDisplay(row.category)}
+                    </Pill>
+                  </td>
+                  <td className={`${styles.bodyCell} ${styles.numericCell}`}>
+                    <Pill variant={getProgressPillVariant(row.progress)}>
+                      {row.progress == null ? "Unknown" : `${row.progress}%`}
+                    </Pill>
+                  </td>
+                  <td className={`${styles.bodyCell} ${styles.statusCell}`}>
+                    <Pill variant={getStatusPillVariant(row.status)}>
+                      {formatStatusForDisplay(row.status)}
+                    </Pill>
+                  </td>
+                  <td
+                    className={`${styles.bodyCell} ${styles.actionsBodyCell}`}
+                  >
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          aria-label={`Open actions for ${row.name}`}
+                          size="icon-sm"
+                          variant="ghost"
+                        >
+                          <EllipsisIcon />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <EyeIcon />
+                          View document
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>

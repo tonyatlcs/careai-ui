@@ -10,6 +10,7 @@ import {
   REHYDRATE,
 } from "redux-persist";
 import { dashboardReducer } from "@/features/dashboard/dashboardSlice";
+import { documentsReducer } from "@/features/documents/documentsSlice";
 import { rootApi } from "@/store/rootApi";
 
 /** Avoid `redux-persist/lib/storage` default import — Vite ESM/CJS interop can yield a non-object and break `getItem`. */
@@ -34,6 +35,7 @@ const persistStorage = {
 
 const rootReducer = combineReducers({
   dashboard: dashboardReducer,
+  documents: documentsReducer,
   [rootApi.reducerPath]: rootApi.reducer,
 });
 

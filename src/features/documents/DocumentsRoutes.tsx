@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { DocumentsPage } from "@/features/documents/pages/DocumentsPage";
+import { DocumentsPage } from "@/features/documents/pages/DocumentsPage/DocumentsPage";
 
 export function DocumentsRoutes() {
   return (
