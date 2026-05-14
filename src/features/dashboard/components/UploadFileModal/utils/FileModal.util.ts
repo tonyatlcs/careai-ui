@@ -25,7 +25,25 @@ export const formatFileSize = (bytes: number): string => {
 };
 
 export const fileKindForName = (name: string): FileInfoRowFileKind => {
-  return name.toLowerCase().endsWith(".pdf") ? "pdf" : "default";
+  const normalized = name.toLowerCase();
+
+  if (normalized.endsWith(".pdf")) {
+    return "pdf";
+  }
+
+  if (normalized.endsWith(".doc") || normalized.endsWith(".docx")) {
+    return "docx";
+  }
+
+  if (
+    normalized.endsWith(".jpg") ||
+    normalized.endsWith(".jpeg") ||
+    normalized.endsWith(".png")
+  ) {
+    return "image";
+  }
+
+  return "default";
 };
 
 export const fileKey = (file: File): string => {

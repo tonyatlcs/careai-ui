@@ -3,8 +3,6 @@ $text-muted: #6b7280;
 $action-icon: #4b5563;
 $progress-track: #f3f4f6;
 $progress-fill: #4f46e5;
-$pdf-icon-bg: #fef2f2;
-$pdf-icon: #dc2626;
 $default-icon-bg: #f3f4f6;
 $default-icon: #4b5563;
 $success: #10b981;
@@ -40,17 +38,6 @@ $success: #10b981;
   border-radius: 4px;
   color: $default-icon;
   background: $default-icon-bg;
-}
-
-.iconWrapPdf {
-  color: $pdf-icon;
-  background: $pdf-icon-bg;
-}
-
-.fileIcon {
-  display: block;
-  width: 22px;
-  height: 22px;
 }
 
 .textBlock {

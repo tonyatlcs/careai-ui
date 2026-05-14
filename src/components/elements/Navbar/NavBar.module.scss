@@ -37,6 +37,14 @@ $app-header-row-height: 68px;
   display: inline-block;
 }
 
+.pageTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--foreground);
+}
+
 .appHeaderActions {
   display: flex;
   flex-shrink: 0;
@@ -68,4 +76,6 @@ $app-header-row-height: 68px;
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
+  background-color: #F4F6F6;
+
 }

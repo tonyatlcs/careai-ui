@@ -6,6 +6,10 @@ $trend-down-border: #fecaca;
 $trend-down-bg: #fef2f2;
 $trend-down-text: #ef4444;
 
+$warning-border: #f59e0b;
+$warning-bg: #fff7ed;
+$warning-text: #f59e0b;
+
 .pill {
   display: inline-flex;
   flex-shrink: 0;
@@ -36,6 +40,12 @@ $trend-down-text: #ef4444;
     height: auto;
     padding: 2px 8px;
     background: #f3f4f6;
+  }
+
+  &.warning {
+    color: $warning-text;
+    background-color: $warning-bg;
+    border: 1px solid $warning-border;
   }
 
   .icon {

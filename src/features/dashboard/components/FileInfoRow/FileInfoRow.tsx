@@ -1,9 +1,13 @@
 import { cn } from "@/lib/utils";
-import { Check, FileText, Pause, Play, Trash2, X } from "lucide-react";
+import { Check, Pause, Play, Trash2, X } from "lucide-react";
 import type { ReactNode } from "react";
+import {
+  FileTypeIcon,
+  type FileTypeIconKind,
+} from "@/features/dashboard/components/FileTypeIcon/FileTypeIcon";
 import styles from "./FileInfoRow.module.scss";
 
-export type FileInfoRowFileKind = "pdf" | "default";
+export type FileInfoRowFileKind = FileTypeIconKind;
 export type FileInfoRowStatus = "uploading" | "complete" | "error";
 
 export type FileInfoRowProps = {
@@ -57,15 +61,13 @@ export function FileInfoRow({
   return (
     <div className={cn(styles.root, className)}>
       <div className={styles.topRow}>
-        <div
-          className={cn(
-            styles.iconWrap,
-            fileKind === "pdf" && styles.iconWrapPdf,
-          )}
-          aria-hidden
-        >
-          {icon ?? <FileText className={styles.fileIcon} strokeWidth={1.75} />}
-        </div>
+        {icon ? (
+          <div className={styles.iconWrap} aria-hidden>
+            {icon}
+          </div>
+        ) : (
+          <FileTypeIcon fileName={fileName} kind={fileKind} />
+        )}
 
         <div className={styles.textBlock}>
           <p className={styles.fileName} title={fileName}>

@@ -3,7 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { NavBar } from "@/components/elements/Navbar/NavBar";
 import { SideBar } from "@/components/elements/SideBar/SideBar";
 
-export function AppLayout() {
+export const AppLayout = () => {
   return (
     <TooltipProvider>
       <SidebarProvider>
@@ -12,4 +12,4 @@ export function AppLayout() {
       </SidebarProvider>
     </TooltipProvider>
   );
-}
+};

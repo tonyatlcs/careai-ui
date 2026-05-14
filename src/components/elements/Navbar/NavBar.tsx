@@ -3,7 +3,7 @@ import { SidebarInset } from "@/components/ui/sidebar";
 import { UploadFileModal } from "@/features/dashboard/components/UploadFileModal/UploadFileModal";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import styles from "./NavBar.module.scss";
 
 /** Shown in the main header until profile / auth is wired up. */
@@ -11,17 +11,23 @@ const HEADER_GREETING_NAME = "Tony Li";
 
 export function NavBar() {
   const [addDocumentOpen, setAddDocumentOpen] = useState(false);
+  const { pathname } = useLocation();
+  const isDocumentsPage = pathname === "/documents";
 
   return (
     <SidebarInset>
       <header className={styles.appHeader}>
         <div className={styles.appHeaderLeft}>
-          <p className={styles.greeting}>
-            Welcome back, {HEADER_GREETING_NAME}{" "}
-            <span className={styles.greetingWave} aria-hidden>
-              👋
-            </span>
-          </p>
+          {isDocumentsPage ? (
+            <h1 className={styles.pageTitle}>Manage Documents</h1>
+          ) : (
+            <p className={styles.greeting}>
+              Welcome back, {HEADER_GREETING_NAME}{" "}
+              <span className={styles.greetingWave} aria-hidden>
+                👋
+              </span>
+            </p>
+          )}
         </div>
         <div className={styles.appHeaderActions}>
           <Button

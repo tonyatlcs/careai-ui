@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 import styles from "./Pill.module.scss";
 
-export type PillVariant = "up" | "down" | "neutral";
+export type PillVariant = "up" | "down" | "neutral" | "warning";
 
 export type PillProps = {
   children: ReactNode;

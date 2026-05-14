@@ -15,6 +15,7 @@ import type { AppDispatch, RootState } from "@/store";
 import { CloudUpload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import styles from "./UploadFileModal.module.scss";
 import {
   fileKey,
@@ -36,6 +37,7 @@ export function UploadFileModal({
   onOpenChange,
   onUpload,
 }: UploadFileModalProps) {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const fileCount = useSelector(
     (state: RootState) => state.dashboard.fileCount,
@@ -125,10 +127,6 @@ export function UploadFileModal({
     setRows((prev) => prev.filter((row) => row.id !== rowId));
   }, []);
 
-  const handleCancel = useCallback(() => {
-    onOpenChange(false);
-  }, [onOpenChange]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={styles.modalContent} showCloseButton={false}>
@@ -202,8 +200,12 @@ export function UploadFileModal({
             type="button"
             className={styles.uploadButton}
             disabled={rows.length === 0}
+            onClick={() => {
+              onOpenChange(false);
+              navigate("/documents");
+            }}
           >
-            Process Files
+            Upload Files
           </Button>
         </DialogFooter>
       </DialogContent>
