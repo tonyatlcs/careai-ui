@@ -6,10 +6,14 @@ import { useCreateDocumentBatchMutation } from "@/features/dashboard/dashboardAp
 import { useCallback } from "react";
 
 /** Dashboard document picker; wraps the shared {@link Dropzone} with the same API. */
-export type DocumentDropzoneProps = DropzoneProps;
+export type DocumentDropzoneProps = DropzoneProps & {
+  /** Fires after the batch upload request finishes (success or failure). */
+  onUploadSettled?: (info: { ok: boolean; files: File[] }) => void;
+};
 
 export function DocumentDropzone({
   onDrop,
+  onUploadSettled,
   disabled,
   ...dropzoneProps
 }: DocumentDropzoneProps) {
@@ -28,9 +32,16 @@ export function DocumentDropzone({
         formData.append("files", file);
       });
 
-      void createDocumentBatch(formData);
+      void createDocumentBatch(formData)
+        .unwrap()
+        .then(() => {
+          onUploadSettled?.({ ok: true, files: acceptedFiles });
+        })
+        .catch(() => {
+          onUploadSettled?.({ ok: false, files: acceptedFiles });
+        });
     },
-    [createDocumentBatch, onDrop],
+    [createDocumentBatch, onDrop, onUploadSettled],
   );
 
   return (

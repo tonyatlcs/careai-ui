@@ -87,7 +87,80 @@
   }
 
   .body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     padding-top: 16px;
+  }
+
+  .fileSection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rowHeadingContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .rowHeading {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 0;
+      color: #111827;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .fileCountPill {
+      color: #6B7280;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 16px; /* 133.333% */
+    }
+  
+  }
+
+  .fileList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: min(40vh, 320px);
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  .fileListItem {
+    margin: 0;
+  }
+
+  .footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 12px;
+    margin: 24px -24px -24px;
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+
+    .cancelButton,
+    .uploadButton {
+      min-width: 112px;
+    }
+
+    .uploadButton {
+      border-radius: 8px;
+      color: #fff;
+      background: #4f46e5;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
   }
 }
 
@@ -135,6 +208,15 @@
 
     .body {
       padding-top: 8px;
+    }
+
+    .footer {
+      flex-direction: column-reverse;
+
+      .cancelButton,
+      .uploadButton {
+        width: 100%;
+      }
     }
   }
 }

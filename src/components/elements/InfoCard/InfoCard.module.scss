@@ -4,14 +4,6 @@ $surface-indigo: #eef2ff;
 $icon-muted: #a5b4fc;
 $icon-strong: #6366f1;
 
-$trend-up-border: #bbf7d0;
-$trend-up-bg: #f0fdf4;
-$trend-up-text: #10b981;
-
-$trend-down-border: #fecaca;
-$trend-down-bg: #fef2f2;
-$trend-down-text: #ef4444;
-
 .article {
   box-sizing: border-box;
   
@@ -100,39 +92,6 @@ $trend-down-text: #ef4444;
   font-weight: 700;
   line-height: 2.5rem;
   color: $primary;
-}
-
-.trend {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  gap: 0.125rem;
-  width: 57.56px;
-  height: 1.25rem;
-  border-radius: 9999px;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.trendUp {
-  color: $trend-up-text;
-  background-color: $trend-up-bg;
-  border: 1px solid $trend-up-border;
-}
-
-.trendDown {
-  color: $trend-down-text;
-  background-color: $trend-down-bg;
-  border: 1px solid $trend-down-border;
-}
-
-.trendIcon {
-  display: block;
-  flex-shrink: 0;
-  width: 0.625rem;
-  height: 0.625rem;
 }
 
 .content {

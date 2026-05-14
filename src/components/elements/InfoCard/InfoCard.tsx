@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Ellipsis, MoveDown, MoveUp } from "lucide-react";
+import { Pill } from "@/components/elements/Pill/Pill";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 import styles from "./InfoCard.module.scss";
@@ -52,15 +53,9 @@ export function InfoCard({
         <div className={styles.valueRow}>
           <p className={styles.value}>{value}</p>
           {trendPercentage ? (
-            <span
-              className={cn(
-                styles.trend,
-                trendDirection === "up" ? styles.trendUp : styles.trendDown,
-              )}
-            >
-              <TrendIcon className={styles.trendIcon} aria-hidden />
+            <Pill icon={TrendIcon} variant={trendDirection}>
               {trendPercentage}
-            </span>
+            </Pill>
           ) : null}
         </div>
 
