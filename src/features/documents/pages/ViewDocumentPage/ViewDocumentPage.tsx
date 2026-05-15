@@ -96,6 +96,7 @@ export const ViewDocumentPage: React.FC = () => {
               contactSource: extractionSnapshot.contactSource,
               issueUser: extractionSnapshot.issueUser,
               category: extractionSnapshot.category,
+              storeIn: extractionSnapshot.storeIn,
             };
 
   const showExtractionLoading =
@@ -224,6 +225,7 @@ export const ViewDocumentPage: React.FC = () => {
       contactSource: saved.contactSource,
       issueUser: saved.issueUser,
       category: saved.category,
+      storeIn: saved.storeIn,
     };
     setSavedForm(next);
   }, [documentId, form, patchExtraction, setSavedForm]);

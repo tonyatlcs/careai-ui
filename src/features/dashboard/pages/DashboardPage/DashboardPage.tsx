@@ -17,7 +17,7 @@ import { PatientOverviewWidget } from "../../components/PatientOverviewWidget/Pa
 export function DashboardPage() {
   return (
     <>
-      <section className="grid grid-cols-4 gap-4">
+      <section className={styles.cardsGrid}>
         <InfoCard
           title="Total doctors"
           value="300+"

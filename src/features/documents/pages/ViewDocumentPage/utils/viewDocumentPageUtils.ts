@@ -38,6 +38,7 @@ export const FIELD_LABELS: Record<ExtractionFieldKey, string> = {
   contactSource: "Contact source",
   issueUser: "Issue / user",
   category: "Category",
+  storeIn: "Store in",
 };
 
 export function confidenceLabelForField(
@@ -129,6 +130,8 @@ export function firstBoxPageForField(
 }
 
 export const CATEGORY_OPTIONS = Object.keys(categoryDisplayLabels) as (keyof typeof categoryDisplayLabels)[];
+
+export const STORE_IN_OPTIONS = ["Correspondence", "Investigations"] as const;
 
 export const PREVIEW_PAD = 28;
 

@@ -9,6 +9,7 @@ import {
 import {
   CATEGORY_OPTIONS,
   FIELD_LABELS,
+  STORE_IN_OPTIONS,
   confidenceLabelForField,
   isWarnConfidence,
 } from "@/features/documents/pages/ViewDocumentPage/utils/viewDocumentPageUtils";
@@ -69,6 +70,19 @@ export const ExtractionPanel: FC<ExtractionPanelProps> = ({
               {CATEGORY_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>
                   {categoryDisplayLabels[opt]}
+                </option>
+              ))}
+            </select>
+          ) : field === "storeIn" ? (
+            <select
+              className={styles.select}
+              value={form.storeIn}
+              onChange={(e) => onUpdateField("storeIn", e.target.value)}
+              onFocus={() => onFieldFocus(field)}
+            >
+              {STORE_IN_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
                 </option>
               ))}
             </select>

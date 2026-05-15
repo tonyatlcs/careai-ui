@@ -28,6 +28,7 @@ export type FieldBoxes = {
   contactSource: FieldBox[];
   issueUser: FieldBox[];
   category: FieldBox[];
+  storeIn: FieldBox[];
 };
 
 export type ContentBlock = {
@@ -46,6 +47,7 @@ export type ExtractionFields = {
   contactSource: string;
   issueUser: string;
   category: string;
+  storeIn: "Correspondence" | "Investigations";
 };
 
 export type GetDocumentContentResponse = {
@@ -77,6 +79,7 @@ export const EXTRACTION_FIELD_KEYS = [
   "contactSource",
   "issueUser",
   "category",
+  "storeIn",
 ] as const;
 
 export type ExtractionFieldKey = (typeof EXTRACTION_FIELD_KEYS)[number];

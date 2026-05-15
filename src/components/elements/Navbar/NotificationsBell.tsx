@@ -14,7 +14,7 @@ import type { AppDispatch, RootState } from "@/store";
 import { Bell, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import bellStyles from "./NotificationsBell.module.scss";
+import styles from "./NotificationsBell.module.scss";
 
 export function NotificationsBell() {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,29 +30,26 @@ export function NotificationsBell() {
           type="button"
           variant="outline"
           size="icon-sm"
-          className="relative shrink-0"
+          className={styles.trigger}
           aria-label="Completed document notifications"
         >
-          <Bell aria-hidden className="size-4" />
+          <Bell aria-hidden className={styles.triggerIcon} />
           {count > 0 ? (
-            <span
-              className={`pointer-events-none absolute -top-1 -right-1 flex min-h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${bellStyles.countBadge}`}
-              aria-hidden
-            >
+            <span className={styles.countBadge} aria-hidden>
               {formatDocumentsQueueBadgeCount(count)}
             </span>
           ) : null}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-          <p className="text-sm font-semibold leading-none">Completed</p>
+      <PopoverContent align="end" className={styles.popoverContent}>
+        <div className={styles.header}>
+          <p className={styles.title}>Completed</p>
           {count > 0 ? (
             <Button
               type="button"
               variant="ghost"
               size="xs"
-              className="h-auto py-1 text-muted-foreground"
+              className={styles.clearButton}
               onClick={() => dispatch(clearCompletedDocumentNotifications())}
             >
               Clear all
@@ -61,35 +58,32 @@ export function NotificationsBell() {
         </div>
         <Separator />
         {count === 0 ? (
-          <p className="px-3 py-4 text-sm text-muted-foreground">
+          <p className={styles.emptyMessage}>
             When documents finish processing, they will appear here.
           </p>
         ) : (
-          <ul className="max-h-72 overflow-y-auto py-1">
+          <ul className={styles.list}>
             {notifications.map((item) => (
-              <li
-                key={item.id}
-                className="flex min-h-10 items-stretch gap-0 border-b border-border last:border-b-0"
-              >
+              <li key={item.id} className={styles.item}>
                 <Link
                   to={`/documents/${item.id}`}
-                  className="flex min-w-0 flex-1 items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                  className={styles.itemLink}
                   title={item.name}
                 >
-                  <span className="truncate">{item.name}</span>
+                  <span className={styles.itemName}>{item.name}</span>
                 </Link>
-                <div className="flex shrink-0 items-center pr-1">
+                <div className={styles.itemActions}>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    className="text-muted-foreground hover:text-foreground"
+                    className={styles.dismissButton}
                     aria-label={`Dismiss notification for ${item.name}`}
                     onClick={() =>
                       dispatch(dismissCompletedDocumentNotification(item.id))
                     }
                   >
-                    <X className="size-3.5" aria-hidden />
+                    <X className={styles.dismissIcon} aria-hidden />
                   </Button>
                 </div>
               </li>

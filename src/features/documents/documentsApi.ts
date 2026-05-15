@@ -165,6 +165,7 @@ export const documentsApi = rootApi.injectEndpoints({
             contactSource: saved.contactSource,
             issueUser: saved.issueUser,
             category: saved.category,
+            storeIn: saved.storeIn,
             boxesAvailable: saved.boxesAvailable,
             fieldBoxes: saved.fieldBoxes,
           };
@@ -184,6 +185,7 @@ export const documentsApi = rootApi.injectEndpoints({
                   contactSource: saved.contactSource,
                   issueUser: saved.issueUser,
                   category: saved.category,
+                  storeIn: saved.storeIn,
                 };
               },
             ),
