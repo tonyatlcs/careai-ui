@@ -6,6 +6,8 @@ export type UploadRow = {
   progress: number;
   status: "uploading" | "complete" | "error";
   paused: boolean;
+  /** Set after a successful batch upload; used to remove the server row when the user dismisses the row. */
+  documentId?: string;
 };
 
 export const formatFileSize = (bytes: number): string => {

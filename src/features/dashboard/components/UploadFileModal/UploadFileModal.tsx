@@ -15,7 +15,8 @@ import {
   dashboardApi,
   type CreateDocumentBatchResponse,
 } from "@/features/dashboard/dashboardApi";
-import { setDocumentIds } from "@/features/documents/documentsSlice";
+import { documentsApi } from "@/features/documents/documentsApi";
+import { removeDocumentId, setDocumentIds } from "@/features/documents/documentsSlice";
 import type { AppDispatch, RootState } from "@/store";
 import { CloudUpload, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -58,6 +59,67 @@ const getUploadedDocumentIds = (
   }
 
   return [];
+};
+
+type BatchDocumentRef = { id: string; filename: string };
+
+const orderedDocumentsFromBatchResponse = (
+  response: CreateDocumentBatchResponse,
+  files: File[],
+): BatchDocumentRef[] => {
+  if (response.batch?.documents?.length) {
+    return response.batch.documents.map((d) => ({
+      id: d.id,
+      filename: d.filename,
+    }));
+  }
+
+  if (Array.isArray(response.documents)) {
+    return response.documents.map((d, index) => ({
+      id: d.id,
+      filename: files[index]?.name ?? "",
+    }));
+  }
+
+  if (Array.isArray(response.documentIds)) {
+    return response.documentIds.map((id, index) => ({
+      id,
+      filename: files[index]?.name ?? "",
+    }));
+  }
+
+  return [];
+};
+
+const mapFilesToUploadedDocumentIds = (
+  files: File[],
+  response?: CreateDocumentBatchResponse,
+): Map<string, string> => {
+  const map = new Map<string, string>();
+  if (!response) {
+    return map;
+  }
+
+  const ordered = orderedDocumentsFromBatchResponse(response, files);
+  if (ordered.length === 0) {
+    return map;
+  }
+
+  if (ordered.length === files.length) {
+    for (let i = 0; i < files.length; i++) {
+      map.set(fileKey(files[i]), ordered[i].id);
+    }
+    return map;
+  }
+
+  for (const file of files) {
+    const match = ordered.find((d) => d.filename === file.name);
+    if (match) {
+      map.set(fileKey(file), match.id);
+    }
+  }
+
+  return map;
 };
 
 export function UploadFileModal({
@@ -127,6 +189,9 @@ export function UploadFileModal({
     }) => {
       const touched = new Set(info.files.map((f) => fileKey(f)));
       const uploadedDocumentIds = getUploadedDocumentIds(info.response);
+      const documentIdByFileKey = info.ok
+        ? mapFilesToUploadedDocumentIds(info.files, info.response)
+        : new Map<string, string>();
 
       if (info.ok && uploadedDocumentIds.length > 0) {
         const prev = store.getState().documents.documentIds;
@@ -146,10 +211,12 @@ export function UploadFileModal({
           if (row.status !== "uploading") {
             return row;
           }
+          const documentId = documentIdByFileKey.get(fileKey(row.file));
           return {
             ...row,
             progress: info.ok ? 100 : row.progress,
             status: info.ok ? ("complete" as const) : ("error" as const),
+            ...(info.ok && documentId ? { documentId } : {}),
           };
         }),
       );
@@ -165,9 +232,23 @@ export function UploadFileModal({
     );
   }, []);
 
-  const removeRow = useCallback((rowId: string) => {
-    setRows((prev) => prev.filter((row) => row.id !== rowId));
-  }, []);
+  const removeRow = useCallback(
+    (rowId: string) => {
+      let documentId: string | undefined;
+
+      setRows((prev) => {
+        const row = prev.find((r) => r.id === rowId);
+        documentId = row?.documentId;
+        return prev.filter((r) => r.id !== rowId);
+      });
+
+      if (documentId) {
+        dispatch(removeDocumentId(documentId));
+        void dispatch(documentsApi.endpoints.deleteDocument.initiate(documentId));
+      }
+    },
+    [dispatch],
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -227,10 +227,19 @@ export const documentsApi = rootApi.injectEndpoints({
       },
       invalidatesTags: ["Document-processing"],
     }),
+
+    deleteDocument: builder.mutation<void, string>({
+      query: (documentId) => ({
+        url: `/documents/${documentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Document-processing"],
+    }),
   }),
 });
 
 export const {
+  useDeleteDocumentMutation,
   useListDocumentsQuery,
   useGetDocumentContentQuery,
   useGetDocumentExtractionQuery,
