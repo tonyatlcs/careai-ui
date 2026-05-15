@@ -1,8 +1,14 @@
 import type { FC, RefObject } from "react";
-import type { ExtractionFieldKey, GetDocumentContentResponse } from "@/features/documents/documentContentTypes";
+import type {
+  ExtractionFieldKey,
+  GetDocumentContentResponse,
+} from "@/features/documents/documentContentTypes";
 import { FieldBoxLayer } from "@/features/documents/pages/ViewDocumentPage/components/FieldBoxLayer/FieldBoxLayer";
 import { TranscriptPanel } from "@/features/documents/pages/ViewDocumentPage/components/TranscriptPanel/TranscriptPanel";
-import { inferPageSpace, previewInnerSize } from "@/features/documents/pages/ViewDocumentPage/viewDocumentPageUtils";
+import {
+  inferPageSpace,
+  previewInnerSize,
+} from "@/features/documents/pages/ViewDocumentPage/utils/viewDocumentPageUtils";
 import layoutStyles from "../DocumentPreviewLayout/DocumentPreviewLayout.module.scss";
 
 export type OcrFallbackPreviewProps = {
@@ -29,8 +35,15 @@ export const OcrFallbackPreview: FC<OcrFallbackPreviewProps> = ({
   onSelectPage,
 }) => {
   const page = selectedPage;
-  const space = inferPageSpace(page, content.content.blocks, content.fieldBoxes);
-  const { w: innerW, h: innerH } = previewInnerSize(previewAvail.width, previewAvail.height);
+  const space = inferPageSpace(
+    page,
+    content.content.blocks,
+    content.fieldBoxes,
+  );
+  const { w: innerW, h: innerH } = previewInnerSize(
+    previewAvail.width,
+    previewAvail.height,
+  );
   const reserveTranscript = 168;
   const maxOcrW = Math.max(80, innerW * 0.44);
   const maxOcrH = Math.max(100, innerH - reserveTranscript);
@@ -43,7 +56,10 @@ export const OcrFallbackPreview: FC<OcrFallbackPreviewProps> = ({
     <div className={layoutStyles.previewStack}>
       <div className={layoutStyles.ocrSplit}>
         <div className={layoutStyles.viewport} ref={viewportRef}>
-          <div className={layoutStyles.zoomWrap} style={{ transform: `scale(${zoom})` }}>
+          <div
+            className={layoutStyles.zoomWrap}
+            style={{ transform: `scale(${zoom})` }}
+          >
             <div
               className={layoutStyles.viewport}
               style={{
@@ -65,7 +81,11 @@ export const OcrFallbackPreview: FC<OcrFallbackPreviewProps> = ({
             </div>
           </div>
         </div>
-        <TranscriptPanel content={content} selectedPage={selectedPage} onSelectPage={onSelectPage} />
+        <TranscriptPanel
+          content={content}
+          selectedPage={selectedPage}
+          onSelectPage={onSelectPage}
+        />
       </div>
     </div>
   );

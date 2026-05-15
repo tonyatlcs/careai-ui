@@ -1,18 +1,11 @@
-import * as pdfjs from "pdfjs-dist";
-import type { PDFDocumentProxy } from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
-import type { ExtractionFieldKey, ExtractionFields } from "@/features/documents/documentContentTypes";
+import type {
+  ExtractionFieldKey,
+  ExtractionFields,
+} from "@/features/documents/documentContentTypes";
 import {
   documentsApi,
   useGetDocumentContentQuery,
@@ -27,9 +20,17 @@ import { ExtractionPanel } from "@/features/documents/pages/ViewDocumentPage/com
 import extractionPanelStyles from "@/features/documents/pages/ViewDocumentPage/components/ExtractionPanel/ExtractionPanel.module.scss";
 import { PageRail } from "@/features/documents/pages/ViewDocumentPage/components/PageRail/PageRail";
 import styles from "@/features/documents/pages/ViewDocumentPage/ViewDocumentPage.module.scss";
-import { usePdfRailThumbnails } from "@/features/documents/pages/ViewDocumentPage/usePdfRailThumbnails";
-import { firstBoxPageForField, pagesFromContent } from "@/features/documents/pages/ViewDocumentPage/viewDocumentPageUtils";
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+import { useDocumentScopedState } from "@/features/documents/pages/ViewDocumentPage/hooks/useDocumentScopedState";
+import { useExtractionForm } from "@/features/documents/pages/ViewDocumentPage/hooks/useExtractionForm";
+import { useFocusedFieldNavigation } from "@/features/documents/pages/ViewDocumentPage/hooks/useFocusedFieldNavigation";
+import { useObjectUrl } from "@/features/documents/pages/ViewDocumentPage/hooks/useObjectUrl";
+import { usePdfDocument } from "@/features/documents/pages/ViewDocumentPage/hooks/usePdfDocument";
+import { usePdfRailThumbnails } from "@/features/documents/pages/ViewDocumentPage/hooks/usePdfRailThumbnails";
+import { usePreviewSize } from "@/features/documents/pages/ViewDocumentPage/hooks/usePreviewSize";
+import {
+  firstBoxPageForField,
+  pagesFromContent,
+} from "@/features/documents/pages/ViewDocumentPage/utils/viewDocumentPageUtils";
 
 export const ViewDocumentPage: React.FC = () => {
   const { documentId = "" } = useParams<{ documentId: string }>();
@@ -43,11 +44,13 @@ export const ViewDocumentPage: React.FC = () => {
    */
   const contentCached = useSelector((state: RootState) =>
     documentId
-      ? documentsApi.endpoints.getDocumentContent.select(documentId)(state)?.data
+      ? documentsApi.endpoints.getDocumentContent.select(documentId)(state)
+          ?.data
       : undefined,
   );
   const contentPollMs =
-    contentCached?.status === "pending" || contentCached?.status === "processing"
+    contentCached?.status === "pending" ||
+    contentCached?.status === "processing"
       ? 1200
       : 0;
 
@@ -78,80 +81,40 @@ export const ViewDocumentPage: React.FC = () => {
   const [patchExtraction, { isLoading: patchLoading }] =
     usePatchDocumentExtractionMutation();
 
-  const [form, setForm] = useState<ExtractionFields | null>(null);
-  const [baseline, setBaseline] = useState("");
-  const [selectedPage, setSelectedPage] = useState(1);
-  const [focusedField, setFocusedField] = useState<ExtractionFieldKey | null>(null);
-  const [hoveredField, setHoveredField] = useState<ExtractionFieldKey | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
-  /** PDF user-space page size (scale 1 viewport) for the active thumbnail page. */
-  const [pdfPagePts, setPdfPagePts] = useState<{
-    page: number;
-    w: number;
-    h: number;
-  } | null>(null);
-  const [pdfNumPages, setPdfNumPages] = useState(0);
-  const pdfThumbUrls = usePdfRailThumbnails(pdfDoc);
+  const { dirty, form, setSavedForm, updateField } = useExtractionForm(content);
+  const [selectedPageState, setSelectedPage] = useDocumentScopedState(
+    documentId,
+    1,
+  );
+  const [focusedField, setFocusedField] =
+    useDocumentScopedState<ExtractionFieldKey | null>(documentId, null);
+  const [hoveredField, setHoveredField] =
+    useDocumentScopedState<ExtractionFieldKey | null>(documentId, null);
+  const [zoom, setZoom] = useDocumentScopedState(documentId, 1);
   const previewWrapRef = useRef<HTMLDivElement>(null);
-  const [previewAvail, setPreviewAvail] = useState({ width: 720, height: 520 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const boxAnchorRef = useRef<HTMLDivElement>(null);
-  const objectUrlRef = useRef<string | null>(null);
-
-  const dirtyComputed = useMemo(() => {
-    if (!form) {
-      return false;
-    }
-    return JSON.stringify(form) !== baseline;
-  }, [form, baseline]);
-
-  useEffect(() => {
-    if (!content) {
-      return;
-    }
-    if (!content.extraction) {
-      setForm(null);
-      setBaseline("");
-      return;
-    }
-    const next: ExtractionFields = { ...content.extraction };
-    setForm(next);
-    setBaseline(JSON.stringify(next));
-  }, [content?.documentId, content?.extraction]);
-
-  const fileObjectUrl = useMemo(() => {
-    if (!fileBlob) {
-      return null;
-    }
-    const url = URL.createObjectURL(fileBlob);
-    return url;
-  }, [fileBlob]);
-
-  useEffect(() => {
-    objectUrlRef.current = fileObjectUrl;
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-      }
-    };
-  }, [fileObjectUrl]);
-
-  useEffect(() => {
-    setFocusedField(null);
-    setHoveredField(null);
-    setZoom(1);
-  }, [documentId]);
+  const fileObjectUrl = useObjectUrl(fileBlob);
+  const previewAvail = usePreviewSize(previewWrapRef);
 
   const ocrOnly =
-    content != null &&
-    (content.documentKind === "docx" || fileError === true);
+    content != null && (content.documentKind === "docx" || fileError === true);
 
   const originalReady =
     content != null &&
     content.documentKind !== "docx" &&
     fileBlob != null &&
     !fileError;
+  const selectedPageCandidate = Math.max(1, selectedPageState);
+
+  const { pdfDoc, pdfNumPages, pdfPagePts } = usePdfDocument({
+    documentId,
+    documentKind: content?.documentKind,
+    fileObjectUrl,
+    originalReady,
+    selectedPage: selectedPageCandidate,
+  });
+  const pdfThumbUrls = usePdfRailThumbnails(pdfDoc);
 
   const pages = useMemo(() => {
     if (!content) {
@@ -160,109 +123,26 @@ export const ViewDocumentPage: React.FC = () => {
     if (originalReady && pdfNumPages > 0) {
       return Array.from({ length: pdfNumPages }, (_, i) => i + 1);
     }
-    if (originalReady && (content.documentKind === "jpg" || content.documentKind === "png")) {
+    if (
+      originalReady &&
+      (content.documentKind === "jpg" || content.documentKind === "png")
+    ) {
       return [1];
     }
     return pagesFromContent(content);
   }, [content, originalReady, pdfNumPages]);
 
-  useEffect(() => {
-    if (!pages.includes(selectedPage)) {
-      setSelectedPage(pages[0] ?? 1);
-    }
-  }, [pages, selectedPage]);
+  const selectedPage = pages.includes(selectedPageState)
+    ? selectedPageState
+    : (pages[0] ?? 1);
 
-  useEffect(() => {
-    if (!fileObjectUrl || !originalReady || content?.documentKind !== "pdf") {
-      setPdfDoc(null);
-      setPdfNumPages(0);
-      return;
-    }
-    let cancelled = false;
-    let doc: PDFDocumentProxy | null = null;
-    void (async () => {
-      try {
-        const loadingTask = pdfjs.getDocument({ url: fileObjectUrl });
-        doc = await loadingTask.promise;
-        if (cancelled) {
-          await doc.destroy();
-          return;
-        }
-        setPdfDoc(doc);
-        setPdfNumPages(doc.numPages);
-      } catch {
-        if (!cancelled) {
-          setPdfDoc(null);
-          setPdfNumPages(0);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-      if (doc) {
-        void doc.destroy();
-      }
-    };
-  }, [fileObjectUrl, originalReady, content?.documentKind, documentId]);
-
-  useLayoutEffect(() => {
-    if (!pdfDoc || content?.documentKind !== "pdf") {
-      setPdfPagePts(null);
-      return;
-    }
-    let cancelled = false;
-    void pdfDoc.getPage(selectedPage).then((p) => {
-      if (cancelled) {
-        return;
-      }
-      const v = p.getViewport({ scale: 1 });
-      setPdfPagePts({ page: selectedPage, w: v.width, h: v.height });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [pdfDoc, selectedPage, content?.documentKind]);
-
-  useLayoutEffect(() => {
-    const el = previewWrapRef.current;
-    if (!el) {
-      return;
-    }
-    const measure = () => {
-      const { clientWidth, clientHeight } = el;
-      if (clientWidth > 0 && clientHeight > 0) {
-        setPreviewAvail({ width: clientWidth, height: clientHeight });
-      }
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!focusedField || !content) {
-      return;
-    }
-    const p = firstBoxPageForField(content.fieldBoxes, focusedField);
-    if (p != null && p !== selectedPage) {
-      setSelectedPage(p);
-    }
-  }, [focusedField, content]);
-
-  useLayoutEffect(() => {
-    if (!focusedField) {
-      return;
-    }
-    const anchor = boxAnchorRef.current;
-    if (anchor) {
-      anchor.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
-    }
-  }, [focusedField, selectedPage, content]);
-
-  const updateField = useCallback((key: ExtractionFieldKey, value: string) => {
-    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
-  }, []);
+  useFocusedFieldNavigation({
+    boxAnchorRef,
+    content,
+    focusedField,
+    selectedPage,
+    setSelectedPage,
+  });
 
   const persist = useCallback(async () => {
     if (!documentId || !form) {
@@ -280,9 +160,8 @@ export const ViewDocumentPage: React.FC = () => {
       issueUser: saved.issueUser,
       category: saved.category,
     };
-    setForm(next);
-    setBaseline(JSON.stringify(next));
-  }, [documentId, form, patchExtraction]);
+    setSavedForm(next);
+  }, [documentId, form, patchExtraction, setSavedForm]);
 
   const handleSave = async () => {
     await persist();
@@ -299,7 +178,9 @@ export const ViewDocumentPage: React.FC = () => {
   };
 
   if (!documentId) {
-    return <p className={documentPreviewStyles.feedback}>Missing document id.</p>;
+    return (
+      <p className={documentPreviewStyles.feedback}>Missing document id.</p>
+    );
   }
 
   return (
@@ -307,7 +188,7 @@ export const ViewDocumentPage: React.FC = () => {
       <DocumentReviewHeader
         documentName={content?.documentName}
         patchLoading={patchLoading}
-        saveDisabled={!dirtyComputed || !form || patchLoading}
+        saveDisabled={!dirty || !form || patchLoading}
         onCancel={() => navigate("/documents")}
         onSave={handleSave}
       />
@@ -366,7 +247,8 @@ export const ViewDocumentPage: React.FC = () => {
           <div className={styles.sideBody}>
             {!content ? null : !form ? (
               <p className={extractionPanelStyles.fieldMeta}>
-                Extracted fields are not available yet. Process the document first.
+                Extracted fields are not available yet. Process the document
+                first.
               </p>
             ) : (
               <ExtractionPanel

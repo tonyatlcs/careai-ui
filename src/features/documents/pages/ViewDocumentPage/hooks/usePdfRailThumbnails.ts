@@ -11,17 +11,18 @@ export const MAX_PDF_RAIL_THUMBNAIL_PAGES = 80;
  * Renders each PDF page to a small JPEG data URL for the left-rail thumbnails.
  */
 export function usePdfRailThumbnails(pdfDoc: PDFDocumentProxy | null): Record<number, string> {
-  const [urlsByPage, setUrlsByPage] = useState<Record<number, string>>({});
+  const [thumbnailState, setThumbnailState] = useState<{
+    pdfDoc: PDFDocumentProxy | null;
+    urlsByPage: Record<number, string>;
+  }>({ pdfDoc: null, urlsByPage: {} });
 
   useEffect(() => {
     if (!pdfDoc) {
-      setUrlsByPage({});
       return;
     }
 
     let cancelled = false;
     const pageCount = Math.min(pdfDoc.numPages, MAX_PDF_RAIL_THUMBNAIL_PAGES);
-    setUrlsByPage({});
 
     (async () => {
       for (let pageNum = 1; pageNum <= pageCount; pageNum += 1) {
@@ -43,7 +44,13 @@ export function usePdfRailThumbnails(pdfDoc: PDFDocumentProxy | null): Record<nu
         }
         const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
         if (!cancelled) {
-          setUrlsByPage((prev) => ({ ...prev, [pageNum]: dataUrl }));
+          setThumbnailState((prev) => ({
+            pdfDoc,
+            urlsByPage: {
+              ...(prev.pdfDoc === pdfDoc ? prev.urlsByPage : {}),
+              [pageNum]: dataUrl,
+            },
+          }));
         }
       }
     })();
@@ -53,5 +60,5 @@ export function usePdfRailThumbnails(pdfDoc: PDFDocumentProxy | null): Record<nu
     };
   }, [pdfDoc]);
 
-  return urlsByPage;
+  return thumbnailState.pdfDoc === pdfDoc ? thumbnailState.urlsByPage : {};
 }

@@ -11,7 +11,7 @@ import {
   FIELD_LABELS,
   confidenceLabelForField,
   isWarnConfidence,
-} from "@/features/documents/pages/ViewDocumentPage/viewDocumentPageUtils";
+} from "@/features/documents/pages/ViewDocumentPage/utils/viewDocumentPageUtils";
 import styles from "./ExtractionPanel.module.scss";
 
 export type ExtractionPanelProps = {
@@ -53,7 +53,11 @@ export const ExtractionPanel: FC<ExtractionPanelProps> = ({
         >
           <div className={styles.fieldLabelRow}>
             <span className={styles.fieldLabel}>{FIELD_LABELS[field]}</span>
-            <span className={`${styles.badge} ${warnBadge ? styles.badgeWarn : ""}`}>{confLabel}</span>
+            <span
+              className={`${styles.badge} ${warnBadge ? styles.badgeWarn : ""}`}
+            >
+              {confLabel}
+            </span>
           </div>
           {field === "category" ? (
             <select
@@ -68,7 +72,9 @@ export const ExtractionPanel: FC<ExtractionPanelProps> = ({
                 </option>
               ))}
             </select>
-          ) : field === "subject" || field === "contactSource" || field === "issueUser" ? (
+          ) : field === "subject" ||
+            field === "contactSource" ||
+            field === "issueUser" ? (
             <textarea
               className={styles.textarea}
               value={form[field]}
@@ -85,7 +91,9 @@ export const ExtractionPanel: FC<ExtractionPanelProps> = ({
             />
           )}
           <span className={styles.fieldMeta}>
-            {noBox ? "No source box" : `Evidence: ${content.fieldBoxes[field].length} region(s)`}
+            {noBox
+              ? "No source box"
+              : `Evidence: ${content.fieldBoxes[field].length} region(s)`}
           </span>
         </div>
       );

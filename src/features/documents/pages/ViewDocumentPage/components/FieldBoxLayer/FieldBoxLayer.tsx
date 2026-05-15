@@ -1,6 +1,12 @@
 import type { FC, RefObject } from "react";
-import type { ExtractionFieldKey, FieldBoxes } from "@/features/documents/documentContentTypes";
-import { boxesOnPage, isWarnConfidence } from "@/features/documents/pages/ViewDocumentPage/viewDocumentPageUtils";
+import type {
+  ExtractionFieldKey,
+  FieldBoxes,
+} from "@/features/documents/documentContentTypes";
+import {
+  boxesOnPage,
+  isWarnConfidence,
+} from "@/features/documents/pages/ViewDocumentPage/utils/viewDocumentPageUtils";
 import styles from "./FieldBoxLayer.module.scss";
 
 export type FieldBoxLayerProps = {
@@ -29,7 +35,11 @@ export const FieldBoxLayer: FC<FieldBoxLayerProps> = ({
       <div
         className={`${styles.box} ${warn ? styles.boxWarn : ""} ${selected ? styles.boxSelected : ""}`}
         key={key}
-        ref={selected && focusedField === field && index === 0 ? boxAnchorRef : undefined}
+        ref={
+          selected && focusedField === field && index === 0
+            ? boxAnchorRef
+            : undefined
+        }
         style={{
           left: `${(box.x / space.width) * 100}%`,
           top: `${(box.y / space.height) * 100}%`,

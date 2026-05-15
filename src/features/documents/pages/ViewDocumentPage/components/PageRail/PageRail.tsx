@@ -2,10 +2,8 @@ import type { FC } from "react";
 import { cn } from "@/lib/utils";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import type { GetDocumentContentResponse } from "@/features/documents/documentContentTypes";
-import {
-  MAX_PDF_RAIL_THUMBNAIL_PAGES,
-} from "@/features/documents/pages/ViewDocumentPage/usePdfRailThumbnails";
-import { inferPageSpace } from "@/features/documents/pages/ViewDocumentPage/viewDocumentPageUtils";
+import { MAX_PDF_RAIL_THUMBNAIL_PAGES } from "@/features/documents/pages/ViewDocumentPage/hooks/usePdfRailThumbnails";
+import { inferPageSpace } from "@/features/documents/pages/ViewDocumentPage/utils/viewDocumentPageUtils";
 import styles from "./PageRail.module.scss";
 
 export type PageRailProps = {
@@ -46,7 +44,10 @@ function RailPageThumbnail({
   }
 
   const pdfMode =
-    content.documentKind === "pdf" && originalReady && pdfDoc != null && fileObjectUrl != null;
+    content.documentKind === "pdf" &&
+    originalReady &&
+    pdfDoc != null &&
+    fileObjectUrl != null;
   const imageMode =
     (content.documentKind === "jpg" || content.documentKind === "png") &&
     originalReady &&
@@ -85,7 +86,11 @@ function RailPageThumbnail({
     );
   }
 
-  const sp = inferPageSpace(pageNum, content.content.blocks, content.fieldBoxes);
+  const sp = inferPageSpace(
+    pageNum,
+    content.content.blocks,
+    content.fieldBoxes,
+  );
   const ar = `${Math.max(sp.width, 1)} / ${Math.max(sp.height, 1)}`;
   return (
     <>
