@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { DocumentDropzone } from "@/features/dashboard/components/DocumentDropzone/DocumentDropzone";
 import { FileInfoRow } from "@/features/dashboard/components/FileInfoRow/FileInfoRow";
 import { setFileCount } from "@/features/dashboard/dashboardSlice";
-import type { CreateDocumentBatchResponse } from "@/features/dashboard/dashboardApi";
+import {
+  dashboardApi,
+  type CreateDocumentBatchResponse,
+} from "@/features/dashboard/dashboardApi";
 import { setDocumentIds } from "@/features/documents/documentsSlice";
 import type { AppDispatch, RootState } from "@/store";
 import { CloudUpload, X } from "lucide-react";
@@ -69,12 +72,10 @@ export function UploadFileModal({
     (state: RootState) => state.dashboard.fileCount,
   );
   const [rows, setRows] = useState<UploadRow[]>([]);
-  const [sharedProgress, setSharedProgress] = useState(0);
 
   useEffect(() => {
     if (!open) {
       setRows([]);
-      setSharedProgress(0);
     }
   }, [open]);
 
@@ -82,41 +83,40 @@ export function UploadFileModal({
     dispatch(setFileCount(rows.length));
   }, [dispatch, rows.length]);
 
-  const uploadingPaused = rows.some(
-    (r) => r.status === "uploading" && r.paused,
-  );
-
-  useEffect(() => {
-    const hasUploading = rows.some((r) => r.status === "uploading");
-    if (!hasUploading || uploadingPaused) {
-      return;
-    }
-
-    const id = window.setInterval(() => {
-      setSharedProgress((p) => (p >= 92 ? p : Math.min(92, p + 4)));
-    }, 160);
-
-    return () => window.clearInterval(id);
-  }, [rows, uploadingPaused]);
-
   const handleDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) {
         return;
       }
       onUpload?.(acceptedFiles);
-      setSharedProgress(0);
       setRows((prev) => [
         ...prev,
         ...acceptedFiles.map((file) => ({
           id: crypto.randomUUID(),
           file,
+          progress: 0,
           status: "uploading" as const,
           paused: false,
         })),
       ]);
     },
     [onUpload],
+  );
+
+  const handleUploadProgress = useCallback(
+    (info: { files: File[]; progress: number }) => {
+      const touched = new Set(info.files.map((f) => fileKey(f)));
+      const progress = Math.min(100, Math.max(0, Math.round(info.progress)));
+
+      setRows((prev) =>
+        prev.map((row) =>
+          touched.has(fileKey(row.file)) && row.status === "uploading"
+            ? { ...row, progress }
+            : row,
+        ),
+      );
+    },
+    [],
   );
 
   const handleUploadSettled = useCallback(
@@ -135,9 +135,9 @@ export function UploadFileModal({
             ...new Set([...prev, ...uploadedDocumentIds]),
           ]),
         );
+        dispatch(dashboardApi.util.invalidateTags(["Document-processing"]));
       }
 
-      setSharedProgress(100);
       setRows((prev) =>
         prev.map((row) => {
           if (!touched.has(fileKey(row.file))) {
@@ -148,6 +148,7 @@ export function UploadFileModal({
           }
           return {
             ...row,
+            progress: info.ok ? 100 : row.progress,
             status: info.ok ? ("complete" as const) : ("error" as const),
           };
         }),
@@ -191,6 +192,7 @@ export function UploadFileModal({
         <div className={styles.body}>
           <DocumentDropzone
             onDrop={handleDrop}
+            onUploadProgress={handleUploadProgress}
             onUploadSettled={handleUploadSettled}
           />
 
@@ -210,7 +212,7 @@ export function UploadFileModal({
                       ? 100
                       : row.status === "error"
                         ? 0
-                        : Math.round(sharedProgress);
+                        : row.progress;
 
                   return (
                     <li key={row.id} className={styles.fileListItem}>

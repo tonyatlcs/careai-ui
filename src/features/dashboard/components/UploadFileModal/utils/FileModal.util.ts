@@ -3,6 +3,7 @@ import type { FileInfoRowFileKind } from "@/features/dashboard/components/FileIn
 export type UploadRow = {
   id: string;
   file: File;
+  progress: number;
   status: "uploading" | "complete" | "error";
   paused: boolean;
 };

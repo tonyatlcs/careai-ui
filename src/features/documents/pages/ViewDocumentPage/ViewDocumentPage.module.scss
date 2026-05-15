@@ -1,0 +1,77 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) minmax(18rem, 22rem);
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1024px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  .body .railSlot {
+    flex-direction: row !important;
+    overflow-x: auto;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border, #e2e8f0);
+  }
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid var(--border, #e2e8f0);
+  background: #f1f5f9;
+}
+
+.previewWrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  width: 100%;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fff;
+}
+
+.sideHeader {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.sideTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sideBody {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

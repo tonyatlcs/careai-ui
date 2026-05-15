@@ -1,4 +1,9 @@
 import { rootApi } from "@/store/rootApi";
+import type {
+  GetDocumentContentResponse,
+  PatchDocumentExtractionResponse,
+} from "@/features/documents/documentContentTypes";
+import type { ExtractionFields } from "@/features/documents/documentContentTypes";
 
 export type DocumentProcessingStatus =
   | "pending"
@@ -42,7 +47,9 @@ export function documentIdsFromListData(
   if (Array.isArray(data.documentIds) && data.documentIds.length > 0) {
     return data.documentIds;
   }
-  return data.documents.map((doc) => doc.id).filter((id): id is string => Boolean(id));
+  return data.documents
+    .map((doc) => doc.id)
+    .filter((id): id is string => Boolean(id));
 }
 
 export type ProcessDocumentsRequest = {
@@ -50,6 +57,11 @@ export type ProcessDocumentsRequest = {
 };
 
 export type ProcessDocumentsResponse = unknown;
+
+export type PatchDocumentExtractionRequest = {
+  documentId: string;
+  body: ExtractionFields;
+};
 
 export const documentsApi = rootApi.injectEndpoints({
   overrideExisting: true,
@@ -60,8 +72,61 @@ export const documentsApi = rootApi.injectEndpoints({
         method: "GET",
         params: { page, limit },
       }),
+      transformResponse: (
+        response: Omit<ListDocumentsResponse, "documentIds"> & {
+          documentIds?: string[];
+        },
+      ): ListDocumentsResponse => ({
+        ...response,
+        documentIds: documentIdsFromListData({
+          ...response,
+          documentIds: response.documentIds ?? [],
+        }),
+      }),
       providesTags: (_result, _error, { page, limit = 13 }) => [
         { type: "Document-processing", id: `LIST-${page}-${limit}` },
+        { type: "Document-processing", id: "LIST" },
+      ],
+    }),
+
+    getDocumentContent: builder.query<GetDocumentContentResponse, string>({
+      query: (documentId) => `/documents/${documentId}/content`,
+      providesTags: (_result, _error, documentId) => [
+        { type: "Document-content", id: documentId },
+        { type: "Document-processing", id: `CONTENT-${documentId}` },
+      ],
+    }),
+
+    getDocumentFileBlob: builder.query<Blob, string>({
+      query: (documentId) => ({
+        url: `/documents/${documentId}/file`,
+        method: "GET",
+        responseHandler: async (response: Response) => {
+          if (!response.ok) {
+            const text = await response.text().catch(() => "");
+            throw new Error(text || `HTTP ${response.status}`);
+          }
+          return response.blob();
+        },
+      }),
+      providesTags: (_result, _error, documentId) => [
+        { type: "Document-content", id: `${documentId}-file` },
+      ],
+    }),
+
+    patchDocumentExtraction: builder.mutation<
+      PatchDocumentExtractionResponse,
+      PatchDocumentExtractionRequest
+    >({
+      query: ({ documentId, body }) => ({
+        url: `/documents/${documentId}/extraction`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { documentId }) => [
+        { type: "Document-content", id: documentId },
+        { type: "Document-content", id: `${documentId}-file` },
+        { type: "Document-processing", id: `CONTENT-${documentId}` },
         { type: "Document-processing", id: "LIST" },
       ],
     }),
@@ -80,5 +145,10 @@ export const documentsApi = rootApi.injectEndpoints({
   }),
 });
 
-export const { useListDocumentsQuery, useProcessDocumentsMutation } =
-  documentsApi;
+export const {
+  useListDocumentsQuery,
+  useGetDocumentContentQuery,
+  useGetDocumentFileBlobQuery,
+  usePatchDocumentExtractionMutation,
+  useProcessDocumentsMutation,
+} = documentsApi;

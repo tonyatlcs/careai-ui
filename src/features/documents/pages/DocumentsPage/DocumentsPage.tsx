@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Pagination } from "@/components/elements/Pagination/Pagination";
 import {
   DocumentsTable,
@@ -23,6 +24,7 @@ const DOCUMENTS_PAGE_SIZE = 13;
 const DOCUMENT_LIST_POLL_MS = 1200;
 
 export const DocumentsPage: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [page, setPage] = useState(1);
   const [selectedDocumentKeys, setSelectedDocumentKeys] = useState<string[]>(
@@ -83,6 +85,17 @@ export const DocumentsPage: React.FC = () => {
     setSelectedDocumentKeys([]);
   };
 
+  const prefetchDocument = useCallback(
+    (documentId: string) => {
+      void dispatch(
+        documentsApi.util.prefetch("getDocumentContent", documentId, {
+          force: false,
+        }),
+      );
+    },
+    [dispatch],
+  );
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.tablePanel}>
@@ -113,7 +126,11 @@ export const DocumentsPage: React.FC = () => {
             <DocumentsTable
               rows={documents}
               selectedRowKeys={selectedDocumentKeys}
+              onPrefetchDocument={prefetchDocument}
               onSelectedRowKeysChange={setSelectedDocumentKeys}
+              onViewDocument={(documentId) => {
+                navigate(`/documents/${documentId}`);
+              }}
             />
             <Pagination
               limit={data?.limit ?? DOCUMENTS_PAGE_SIZE}

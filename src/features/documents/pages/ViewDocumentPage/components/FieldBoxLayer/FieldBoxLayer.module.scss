@@ -1,0 +1,20 @@
+.box {
+  position: absolute;
+  border: 2px solid rgb(59 130 246 / 0.85);
+  border-radius: 2px;
+  background: rgb(59 130 246 / 0.12);
+  cursor: default;
+  box-sizing: border-box;
+}
+
+.boxWarn {
+  border-color: rgb(234 179 8 / 0.95);
+  background: rgb(250 204 21 / 0.15);
+}
+
+.boxSelected {
+  border-width: 3px;
+  border-color: oklch(0.52 0.19 278);
+  background: oklch(0.62 0.19 278 / 0.18);
+  z-index: 2;
+}

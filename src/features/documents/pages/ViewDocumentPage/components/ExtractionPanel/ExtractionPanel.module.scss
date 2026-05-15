@@ -1,0 +1,60 @@
+.fieldBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.badgeWarn {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+.textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.fieldMeta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.fieldFocused {
+  outline: 2px solid oklch(0.52 0.19 278 / 0.45);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}

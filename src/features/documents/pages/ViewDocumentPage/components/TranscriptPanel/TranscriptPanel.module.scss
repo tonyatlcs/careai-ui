@@ -1,0 +1,48 @@
+.transcript {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.75rem;
+  max-height: 24rem;
+  overflow: auto;
+}
+
+.transcriptPage {
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.transcriptPageTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 0.35rem;
+}
+
+.transcriptBlock {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #334155;
+  margin: 0 0 0.35rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.transcriptBlockActive {
+  background: oklch(0.62 0.19 278 / 0.12);
+  outline: 1px solid oklch(0.52 0.19 278 / 0.35);
+}
+
+.transcriptEmptyNote {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}

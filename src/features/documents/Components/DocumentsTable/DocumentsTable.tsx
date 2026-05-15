@@ -19,6 +19,9 @@ type DocumentsTableProps = {
   selectedRowKeys?: string[];
   isSelectionDisabled?: boolean;
   onSelectedRowKeysChange?: (selectedRowKeys: string[]) => void;
+  onViewDocument?: (documentId: string) => void;
+  /** Warm RTK cache for the review page (e.g. hover document name). */
+  onPrefetchDocument?: (documentId: string) => void;
 };
 
 type HeaderSelectionCheckboxProps = {
@@ -162,6 +165,8 @@ export function DocumentsTable({
   selectedRowKeys = [],
   isSelectionDisabled = false,
   onSelectedRowKeysChange,
+  onViewDocument,
+  onPrefetchDocument,
 }: DocumentsTableProps) {
   const selectedRowKeySet = new Set(selectedRowKeys);
   const selectableRowKeys = rows.map(getDocumentRowKey);
@@ -228,6 +233,29 @@ export function DocumentsTable({
           ) : (
             rows.map((row) => {
               const rowKey = getDocumentRowKey(row);
+              const documentNameBody = (
+                <div className={styles.documentName}>
+                  <FileTypeIcon
+                    fileName={row.name}
+                    kind={fileKindForName(row.name)}
+                    size="md"
+                  />
+                  <div className={styles.documentNameText}>
+                    <p
+                      className={styles.documentNameValue}
+                      title={row.name}
+                    >
+                      {row.name}
+                    </p>
+                    <time
+                      className={styles.documentTimestamp}
+                      dateTime={row.createdAt}
+                    >
+                      {formatDocumentTimestamp(row.createdAt)}
+                    </time>
+                  </div>
+                </div>
+              );
 
               return (
                 <tr className={styles.bodyRow} key={rowKey}>
@@ -246,27 +274,19 @@ export function DocumentsTable({
                   <td
                     className={`${styles.bodyCell} ${styles.documentNameCell}`}
                   >
-                    <div className={styles.documentName}>
-                      <FileTypeIcon
-                        fileName={row.name}
-                        kind={fileKindForName(row.name)}
-                        size="md"
-                      />
-                      <div className={styles.documentNameText}>
-                        <p
-                          className={styles.documentNameValue}
-                          title={row.name}
-                        >
-                          {row.name}
-                        </p>
-                        <time
-                          className={styles.documentTimestamp}
-                          dateTime={row.createdAt}
-                        >
-                          {formatDocumentTimestamp(row.createdAt)}
-                        </time>
-                      </div>
-                    </div>
+                    {onViewDocument ? (
+                      <button
+                        aria-label={`View document ${row.name}`}
+                        className={styles.documentNameButton}
+                        type="button"
+                        onClick={() => onViewDocument(rowKey)}
+                        onMouseEnter={() => onPrefetchDocument?.(rowKey)}
+                      >
+                        {documentNameBody}
+                      </button>
+                    ) : (
+                      documentNameBody
+                    )}
                   </td>
                   <td className={`${styles.bodyCell} ${styles.mutedCell}`}>
                     <Pill variant="neutral">{row.patient ?? "Unknown"}</Pill>
@@ -300,7 +320,10 @@ export function DocumentsTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={!onViewDocument}
+                          onSelect={() => onViewDocument?.(rowKey)}
+                        >
                           <EyeIcon />
                           View document
                         </DropdownMenuItem>
