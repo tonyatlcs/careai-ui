@@ -10,8 +10,11 @@ import React, {
   useState,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 import type { ExtractionFieldKey, ExtractionFields } from "@/features/documents/documentContentTypes";
 import {
+  documentsApi,
   useGetDocumentContentQuery,
   useGetDocumentFileBlobQuery,
   usePatchDocumentExtractionMutation,
@@ -32,11 +35,32 @@ export const ViewDocumentPage: React.FC = () => {
   const { documentId = "" } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
 
+  /**
+   * List view polls `/documents` while rows are processing; this query does not, so a prefetched
+   * or older `/content` payload can stay on `processing` after the queue already shows completed.
+   * Drive polling from cached slice data (not `content` from the same hook) to avoid a circular
+   * initializer. Refetch on mount so opening a document always reconciles with the server.
+   */
+  const contentCached = useSelector((state: RootState) =>
+    documentId
+      ? documentsApi.endpoints.getDocumentContent.select(documentId)(state)?.data
+      : undefined,
+  );
+  const contentPollMs =
+    contentCached?.status === "pending" || contentCached?.status === "processing"
+      ? 1200
+      : 0;
+
   const {
     data: content,
     isLoading: contentLoading,
     isError: contentError,
-  } = useGetDocumentContentQuery(documentId, { skip: !documentId });
+  } = useGetDocumentContentQuery(documentId, {
+    skip: !documentId,
+    refetchOnMountOrArgChange: true,
+    skipPollingIfUnfocused: true,
+    pollingInterval: contentPollMs,
+  });
 
   const skipFile =
     !documentId ||

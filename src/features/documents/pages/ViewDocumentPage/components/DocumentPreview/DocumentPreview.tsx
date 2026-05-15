@@ -98,6 +98,14 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
   }
 
   if (content.documentKind === "pdf" && fileObjectUrl) {
+    if (!pdfDoc) {
+      return (
+        <>
+          {failedBanner}
+          <p className={styles.feedback}>Loading PDF preview…</p>
+        </>
+      );
+    }
     return (
       <>
         {failedBanner}

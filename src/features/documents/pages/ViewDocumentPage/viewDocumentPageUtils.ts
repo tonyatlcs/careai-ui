@@ -32,7 +32,7 @@ export function confidencePercentFromStored(raw: number): number {
 }
 
 export const FIELD_LABELS: Record<ExtractionFieldKey, string> = {
-  name: "Name",
+  name: "Patient name",
   reportDate: "Report date",
   subject: "Subject",
   contactSource: "Contact source",

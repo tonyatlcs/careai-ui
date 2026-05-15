@@ -21,9 +21,9 @@ export function usePdfRailThumbnails(pdfDoc: PDFDocumentProxy | null): Record<nu
 
     let cancelled = false;
     const pageCount = Math.min(pdfDoc.numPages, MAX_PDF_RAIL_THUMBNAIL_PAGES);
+    setUrlsByPage({});
 
     (async () => {
-      const next: Record<number, string> = {};
       for (let pageNum = 1; pageNum <= pageCount; pageNum += 1) {
         if (cancelled) {
           return;
@@ -41,10 +41,10 @@ export function usePdfRailThumbnails(pdfDoc: PDFDocumentProxy | null): Record<nu
         if (cancelled) {
           return;
         }
-        next[pageNum] = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
-      }
-      if (!cancelled) {
-        setUrlsByPage(next);
+        const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+        if (!cancelled) {
+          setUrlsByPage((prev) => ({ ...prev, [pageNum]: dataUrl }));
+        }
       }
     })();
 
