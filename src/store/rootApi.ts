@@ -61,7 +61,7 @@ export const rootApi = createApi({
    * invalidatesTags: ['User']
    * ```
    */
-  tagTypes: ["Document-processing", "Document-content"],
+  tagTypes: ["Document-processing", "Document-content", "Document-extraction"],
 
   /**
    * Base endpoints object.

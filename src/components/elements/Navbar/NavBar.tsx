@@ -1,3 +1,4 @@
+import { NotificationsBell } from "@/components/elements/Navbar/NotificationsBell";
 import { Button } from "@/components/ui/button";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { UploadFileModal } from "@/features/dashboard/components/UploadFileModal/UploadFileModal";
@@ -31,6 +32,7 @@ export function NavBar() {
           )}
         </div>
         <div className={styles.appHeaderActions}>
+          <NotificationsBell />
           <Button
             type="button"
             size="lg"

@@ -11,10 +11,12 @@ import {
 } from "@/components/ui/sidebar";
 import { Files, LayoutGrid } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useDocumentsProcessingListSubscription } from "@/features/documents/pages/ViewDocumentPage/hooks/documentsQueuePolling";
 import styles from "./SideBar.module.scss";
 
 export function SideBar() {
   const { pathname } = useLocation();
+  useDocumentsProcessingListSubscription();
 
   return (
     <Sidebar collapsible="none" className={styles.sidebarShell}>

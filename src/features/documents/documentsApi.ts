@@ -1,9 +1,12 @@
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { rootApi } from "@/store/rootApi";
 import type {
+  ExtractionFields,
   GetDocumentContentResponse,
+  GetDocumentExtractionResponse,
   PatchDocumentExtractionResponse,
 } from "@/features/documents/documentContentTypes";
-import type { ExtractionFields } from "@/features/documents/documentContentTypes";
+import { appendProcessingDocumentIds } from "@/features/documents/documentsSlice";
 
 export type DocumentProcessingStatus =
   | "pending"
@@ -99,6 +102,30 @@ export const documentsApi = rootApi.injectEndpoints({
       ],
     }),
 
+    getDocumentExtraction: builder.query<
+      GetDocumentExtractionResponse | null,
+      string
+    >({
+      async queryFn(documentId, _api, _extraOptions, fetchWithBQ) {
+        const result = await fetchWithBQ({
+          url: `/documents/${documentId}/extraction`,
+          method: "GET",
+        });
+        if (result.error) {
+          const err = result.error as FetchBaseQueryError;
+          if (err.status === 404) {
+            return { data: null };
+          }
+          return { error: result.error };
+        }
+        return { data: result.data as GetDocumentExtractionResponse };
+      },
+      providesTags: (_result, _error, documentId) => [
+        { type: "Document-extraction", id: documentId },
+        { type: "Document-processing", id: `CONTENT-${documentId}` },
+      ],
+    }),
+
     getDocumentFileBlob: builder.query<Blob, string>({
       query: (documentId) => ({
         url: `/documents/${documentId}/file`,
@@ -125,10 +152,56 @@ export const documentsApi = rootApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
+      async onQueryStarted({ documentId }, { dispatch, queryFulfilled }) {
+        try {
+          const { data: saved } = await queryFulfilled;
+
+          const extractionSnapshot: GetDocumentExtractionResponse = {
+            documentId: saved.documentId,
+            status: saved.status,
+            name: saved.name,
+            reportDate: saved.reportDate,
+            subject: saved.subject,
+            contactSource: saved.contactSource,
+            issueUser: saved.issueUser,
+            category: saved.category,
+            boxesAvailable: saved.boxesAvailable,
+            fieldBoxes: saved.fieldBoxes,
+          };
+
+          dispatch(
+            documentsApi.util.updateQueryData(
+              "getDocumentContent",
+              documentId,
+              (draft) => {
+                draft.status = saved.status;
+                draft.boxesAvailable = saved.boxesAvailable;
+                draft.fieldBoxes = saved.fieldBoxes;
+                draft.extraction = {
+                  name: saved.name,
+                  reportDate: saved.reportDate,
+                  subject: saved.subject,
+                  contactSource: saved.contactSource,
+                  issueUser: saved.issueUser,
+                  category: saved.category,
+                };
+              },
+            ),
+          );
+
+          dispatch(
+            documentsApi.util.upsertQueryData(
+              "getDocumentExtraction",
+              documentId,
+              extractionSnapshot,
+            ),
+          );
+        } catch {
+          // Failed saves are surfaced through the mutation state; leave cached content unchanged.
+        }
+      },
       invalidatesTags: (_result, _error, { documentId }) => [
-        { type: "Document-content", id: documentId },
-        { type: "Document-content", id: `${documentId}-file` },
-        { type: "Document-processing", id: `CONTENT-${documentId}` },
+        { type: "Document-extraction", id: documentId },
         { type: "Document-processing", id: "LIST" },
       ],
     }),
@@ -142,6 +215,14 @@ export const documentsApi = rootApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      async onQueryStarted({ documentIds }, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(appendProcessingDocumentIds(documentIds));
+        } catch {
+          // Failed requests are not tracked for the completion bubble.
+        }
+      },
       invalidatesTags: ["Document-processing"],
     }),
   }),
@@ -150,6 +231,7 @@ export const documentsApi = rootApi.injectEndpoints({
 export const {
   useListDocumentsQuery,
   useGetDocumentContentQuery,
+  useGetDocumentExtractionQuery,
   useGetDocumentFileBlobQuery,
   usePatchDocumentExtractionMutation,
   useProcessDocumentsMutation,

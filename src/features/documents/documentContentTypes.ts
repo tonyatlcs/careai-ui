@@ -1,4 +1,6 @@
-/** Mirrors `GetDocumentContentResponse` / extraction payloads from careai-core-api. */
+/** Mirrors `GetDocumentContentResponse` from careai-core-api. `extraction` is duplicated on
+ *  `GET /documents/:id/extraction` (DB `document_extractions`); the review UI loads field values from that route.
+ */
 
 export type DocumentKind = "pdf" | "docx" | "jpg" | "png";
 
@@ -64,6 +66,9 @@ export type PatchDocumentExtractionResponse = ExtractionFields & {
   boxesAvailable: boolean;
   fieldBoxes: FieldBoxes;
 };
+
+/** Same payload shape as PATCH /documents/:id/extraction (DB `document_extractions` row + derived boxes). */
+export type GetDocumentExtractionResponse = PatchDocumentExtractionResponse;
 
 export const EXTRACTION_FIELD_KEYS = [
   "name",

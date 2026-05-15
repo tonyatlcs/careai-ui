@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
@@ -9,6 +9,7 @@ import type {
 import {
   documentsApi,
   useGetDocumentContentQuery,
+  useGetDocumentExtractionQuery,
   useGetDocumentFileBlobQuery,
   usePatchDocumentExtractionMutation,
 } from "@/features/documents/documentsApi";
@@ -35,6 +36,10 @@ import {
 export const ViewDocumentPage: React.FC = () => {
   const { documentId = "" } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
+  const queueCompletedCount = useSelector(
+    (state: RootState) =>
+      state.documents.completedDocumentNotifications.length,
+  );
 
   /**
    * List view polls `/documents` while rows are processing; this query does not, so a prefetched
@@ -65,6 +70,39 @@ export const ViewDocumentPage: React.FC = () => {
     pollingInterval: contentPollMs,
   });
 
+  const skipExtractionFetch =
+    !documentId ||
+    !content ||
+    content.status === "pending" ||
+    content.status === "processing";
+
+  const { data: extractionSnapshot, isLoading: extractionLoading } =
+    useGetDocumentExtractionQuery(documentId, {
+      skip: skipExtractionFetch,
+      refetchOnMountOrArgChange: true,
+    });
+
+  const extractionForForm: ExtractionFields | null | undefined =
+    skipExtractionFetch
+      ? null
+      : extractionLoading && extractionSnapshot === undefined
+        ? undefined
+        : extractionSnapshot == null
+          ? null
+          : {
+              name: extractionSnapshot.name,
+              reportDate: extractionSnapshot.reportDate,
+              subject: extractionSnapshot.subject,
+              contactSource: extractionSnapshot.contactSource,
+              issueUser: extractionSnapshot.issueUser,
+              category: extractionSnapshot.category,
+            };
+
+  const showExtractionLoading =
+    !skipExtractionFetch &&
+    extractionLoading &&
+    extractionSnapshot === undefined;
+
   const skipFile =
     !documentId ||
     !content ||
@@ -81,7 +119,34 @@ export const ViewDocumentPage: React.FC = () => {
   const [patchExtraction, { isLoading: patchLoading }] =
     usePatchDocumentExtractionMutation();
 
-  const { dirty, form, setSavedForm, updateField } = useExtractionForm(content);
+  const { dirty, form, setSavedForm, updateField } = useExtractionForm(
+    extractionForForm,
+    documentId,
+  );
+  const latestSaveRef = useRef<{
+    dirty: boolean;
+    documentId: string;
+    form: ExtractionFields | null;
+  }>({ dirty: false, documentId: "", form: null });
+
+  useEffect(() => {
+    latestSaveRef.current = { dirty, documentId, form };
+  }, [dirty, documentId, form]);
+
+  useEffect(() => {
+    return () => {
+      const latest = latestSaveRef.current;
+      if (!latest.documentId || !latest.dirty || !latest.form) {
+        return;
+      }
+      void patchExtraction({
+        documentId: latest.documentId,
+        body: latest.form,
+      })
+        .unwrap()
+        .catch(() => undefined);
+    };
+  }, [patchExtraction]);
   const [selectedPageState, setSelectedPage] = useDocumentScopedState(
     documentId,
     1,
@@ -110,7 +175,7 @@ export const ViewDocumentPage: React.FC = () => {
   const { pdfDoc, pdfNumPages, pdfPagePts } = usePdfDocument({
     documentId,
     documentKind: content?.documentKind,
-    fileObjectUrl,
+    fileBlob,
     originalReady,
     selectedPage: selectedPageCandidate,
   });
@@ -188,6 +253,7 @@ export const ViewDocumentPage: React.FC = () => {
       <DocumentReviewHeader
         documentName={content?.documentName}
         patchLoading={patchLoading}
+        queueCompletedCount={queueCompletedCount}
         saveDisabled={!dirty || !form || patchLoading}
         onCancel={() => navigate("/documents")}
         onSave={handleSave}
@@ -245,7 +311,11 @@ export const ViewDocumentPage: React.FC = () => {
             <h2 className={styles.sideTitle}>Extracted Data</h2>
           </div>
           <div className={styles.sideBody}>
-            {!content ? null : !form ? (
+            {!content ? null : showExtractionLoading ? (
+              <p className={extractionPanelStyles.fieldMeta}>
+                Loading extracted fields…
+              </p>
+            ) : !form ? (
               <p className={extractionPanelStyles.fieldMeta}>
                 Extracted fields are not available yet. Process the document
                 first.

@@ -7,35 +7,44 @@ import type { DocumentKind } from "@/features/documents/documentContentTypes";
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export function usePdfDocument({
+  fileBlob,
   documentId,
   documentKind,
-  fileObjectUrl,
   originalReady,
   selectedPage,
 }: {
+  fileBlob: Blob | undefined;
   documentId: string;
   documentKind: DocumentKind | undefined;
-  fileObjectUrl: string | null;
   originalReady: boolean;
   selectedPage: number;
 }) {
-  const pdfKey =
-    fileObjectUrl && originalReady && documentKind === "pdf"
-      ? `${documentId}:${fileObjectUrl}`
-      : "";
+  const canLoadPdf = Boolean(fileBlob && originalReady && documentKind === "pdf");
   const [pdfState, setPdfState] = useState<{
+    blob: Blob | undefined;
     doc: PDFDocumentProxy | null;
-    key: string;
+    documentId: string;
     numPages: number;
-  }>({ doc: null, key: "", numPages: 0 });
+  }>({ blob: undefined, doc: null, documentId: "", numPages: 0 });
   const [pagePtsState, setPagePtsState] = useState<{
     h: number;
     key: string;
     page: number;
     w: number;
   } | null>(null);
-  const pdfDoc = pdfState.key === pdfKey ? pdfState.doc : null;
-  const pdfNumPages = pdfState.key === pdfKey ? pdfState.numPages : 0;
+  const pdfDoc =
+    canLoadPdf &&
+    pdfState.documentId === documentId &&
+    pdfState.blob === fileBlob
+      ? pdfState.doc
+      : null;
+  const pdfNumPages =
+    canLoadPdf &&
+    pdfState.documentId === documentId &&
+    pdfState.blob === fileBlob
+      ? pdfState.numPages
+      : 0;
+  const pdfKey = canLoadPdf && fileBlob ? `${documentId}:${pdfState.numPages}` : "";
   const pagePtsKey = `${pdfKey}:${selectedPage}`;
   const pdfPagePts =
     pagePtsState?.key === pagePtsKey
@@ -47,33 +56,41 @@ export function usePdfDocument({
       : null;
 
   useEffect(() => {
-    if (!pdfKey || !fileObjectUrl) {
+    if (!canLoadPdf || !fileBlob) {
       return;
     }
     let cancelled = false;
     let doc: PDFDocumentProxy | null = null;
+    let loadingTask: ReturnType<typeof pdfjs.getDocument> | null = null;
     void (async () => {
       try {
-        const loadingTask = pdfjs.getDocument({ url: fileObjectUrl });
+        const bytes = new Uint8Array(await fileBlob.arrayBuffer());
+        if (cancelled) {
+          return;
+        }
+        loadingTask = pdfjs.getDocument({ data: bytes });
         doc = await loadingTask.promise;
         if (cancelled) {
           await doc.destroy();
           return;
         }
-        setPdfState({ doc, key: pdfKey, numPages: doc.numPages });
+        setPdfState({ blob: fileBlob, doc, documentId, numPages: doc.numPages });
       } catch {
         if (!cancelled) {
-          setPdfState({ doc: null, key: pdfKey, numPages: 0 });
+          setPdfState({ blob: fileBlob, doc: null, documentId, numPages: 0 });
         }
       }
     })();
     return () => {
       cancelled = true;
+      if (loadingTask && !doc) {
+        void loadingTask.destroy();
+      }
       if (doc) {
         void doc.destroy();
       }
     };
-  }, [fileObjectUrl, pdfKey]);
+  }, [canLoadPdf, documentId, fileBlob]);
 
   useLayoutEffect(() => {
     if (!pdfDoc || !pdfKey) {

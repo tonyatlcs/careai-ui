@@ -2,19 +2,32 @@ import { useCallback, useMemo, useState } from "react";
 import type {
   ExtractionFieldKey,
   ExtractionFields,
-  GetDocumentContentResponse,
 } from "@/features/documents/documentContentTypes";
 
-export function useExtractionForm(content: GetDocumentContentResponse | undefined) {
+/**
+ * @param extraction Field values from `GET /documents/:id/extraction` (DB `document_extractions`).
+ *   `undefined` means the request has not completed yet; `null` means no row / 404.
+ */
+export function useExtractionForm(
+  extraction: ExtractionFields | null | undefined,
+  documentId: string,
+) {
   const source = useMemo(() => {
-    const form = content?.extraction ? { ...content.extraction } : null;
+    if (extraction === undefined) {
+      return {
+        baseline: "",
+        form: null as ExtractionFields | null,
+        key: "__pending__",
+      };
+    }
+    const form = extraction ? { ...extraction } : null;
     const baseline = form ? JSON.stringify(form) : "";
     return {
       baseline,
       form,
-      key: content ? `${content.documentId}:${baseline}` : "",
+      key: documentId ? `${documentId}:${baseline}` : "",
     };
-  }, [content]);
+  }, [extraction, documentId]);
   const [draft, setDraft] = useState<{
     baseline: string;
     form: ExtractionFields | null;

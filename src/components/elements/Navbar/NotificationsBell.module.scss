@@ -1,0 +1,6 @@
+/* Match app CTA purple (`sharedAppCtaButton`) — shadcn `--primary` is neutral in light mode. */
+.countBadge {
+  background-color: oklch(0.52 0.19 278);
+  color: oklch(0.99 0 0);
+  box-shadow: 0 0 0 2px var(--background);
+}

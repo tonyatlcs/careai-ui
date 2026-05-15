@@ -1,6 +1,8 @@
 import type { FC } from "react";
+import { Link } from "react-router-dom";
 import ctaStyles from "@/components/elements/sharedAppCtaButton.module.scss";
 import { Button } from "@/components/ui/button";
+import { formatDocumentsQueueBadgeCount } from "@/features/documents/pages/ViewDocumentPage/hooks/documentsQueuePolling";
 import styles from "./DocumentReviewHeader.module.scss";
 import { ChevronLeft } from "lucide-react";
 
@@ -10,6 +12,11 @@ export type DocumentReviewHeaderProps = {
   onSave: () => void;
   saveDisabled: boolean;
   patchLoading: boolean;
+  /**
+   * Session count of documents that finished processing while off the queue list;
+   * shown in the full-screen viewer where the shell sidebar is not mounted.
+   */
+  queueCompletedCount?: number;
 };
 
 export const DocumentReviewHeader: FC<DocumentReviewHeaderProps> = ({
@@ -18,6 +25,7 @@ export const DocumentReviewHeader: FC<DocumentReviewHeaderProps> = ({
   onSave,
   saveDisabled,
   patchLoading,
+  queueCompletedCount = 0,
 }) => (
   <header className={styles.header}>
     <div className={styles.headerMain}>
@@ -30,6 +38,18 @@ export const DocumentReviewHeader: FC<DocumentReviewHeaderProps> = ({
       >
         <ChevronLeft className={styles.backButtonIcon} aria-hidden />
       </Button>
+      {queueCompletedCount > 0 ? (
+        <Link
+          to="/documents"
+          className={styles.queueCompletedBadge}
+          title="Open document queue"
+          aria-label={`${queueCompletedCount} document${
+            queueCompletedCount === 1 ? "" : "s"
+          } finished processing — open queue`}
+        >
+          {formatDocumentsQueueBadgeCount(queueCompletedCount)}
+        </Link>
+      ) : null}
       <div className={styles.documentRow}>
         <p className={styles.fileName} title={documentName}>
           {documentName ?? "…"}
