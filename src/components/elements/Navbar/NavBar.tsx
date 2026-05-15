@@ -4,6 +4,7 @@ import { UploadFileModal } from "@/features/dashboard/components/UploadFileModal
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import ctaStyles from "@/components/elements/sharedAppCtaButton.module.scss";
 import styles from "./NavBar.module.scss";
 
 /** Shown in the main header until profile / auth is wired up. */
@@ -15,7 +16,7 @@ export function NavBar() {
   const isDocumentsPage = pathname === "/documents";
 
   return (
-    <SidebarInset>
+    <SidebarInset className="min-h-0">
       <header className={styles.appHeader}>
         <div className={styles.appHeaderLeft}>
           {isDocumentsPage ? (
@@ -33,7 +34,7 @@ export function NavBar() {
           <Button
             type="button"
             size="lg"
-            className={styles.addNewButton}
+            className={ctaStyles.appCtaButton}
             onClick={() => setAddDocumentOpen(true)}
           >
             <Plus aria-hidden />

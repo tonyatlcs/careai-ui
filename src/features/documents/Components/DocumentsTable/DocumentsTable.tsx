@@ -102,20 +102,40 @@ function formatDocumentTimestamp(value: string) {
   return `${dateLabel}, ${timeLabel}`;
 }
 
-function getProgressPillVariant(progress?: number | null): PillVariant {
-  if (progress == null) {
+function getConfidencePillVariant(row: DocumentListItem): PillVariant {
+  const value =
+    row.confidence != null && Number.isFinite(row.confidence)
+      ? row.confidence
+      : row.status === "processing"
+        ? row.progress
+        : null;
+
+  if (value == null) {
     return "warning";
   }
 
-  if (progress < 20) {
+  if (value < 20) {
     return "down";
   }
 
-  if (progress > 50) {
+  if (value > 50) {
     return "up";
   }
 
   return "warning";
+}
+
+function formatConfidenceColumn(row: DocumentListItem): string {
+  if (row.confidence != null && Number.isFinite(row.confidence)) {
+    return `${row.confidence}%`;
+  }
+
+  if (row.status === "processing") {
+    const p = Math.min(100, Math.max(0, Math.round(row.progress)));
+    return `${p}%`;
+  }
+
+  return "Unknown";
 }
 
 function getStatusPillVariant(status: DocumentListItem["status"]): PillVariant {
@@ -297,8 +317,8 @@ export function DocumentsTable({
                     </Pill>
                   </td>
                   <td className={`${styles.bodyCell} ${styles.numericCell}`}>
-                    <Pill variant={getProgressPillVariant(row.progress)}>
-                      {row.progress == null ? "Unknown" : `${row.progress}%`}
+                    <Pill variant={getConfidencePillVariant(row)}>
+                      {formatConfidenceColumn(row)}
                     </Pill>
                   </td>
                   <td className={`${styles.bodyCell} ${styles.statusCell}`}>

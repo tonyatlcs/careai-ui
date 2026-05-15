@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { DashboardRoutes } from "@/features/dashboard/DashboardRoutes";
 import { DocumentsRoutes } from "@/features/documents/DocumentsRoutes";
+import { ViewDocumentRoute } from "@/features/documents/ViewDocumentRoute";
 
 export const App: React.FC = () => {
   return (
@@ -12,6 +13,7 @@ export const App: React.FC = () => {
         <Route path="dashboard/*" element={<DashboardRoutes />} />
         <Route path="documents/*" element={<DocumentsRoutes />} />
       </Route>
+      <Route path="documents/:documentId" element={<ViewDocumentRoute />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

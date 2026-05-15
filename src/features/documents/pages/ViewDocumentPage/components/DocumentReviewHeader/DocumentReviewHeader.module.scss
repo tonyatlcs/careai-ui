@@ -1,5 +1,6 @@
 .header {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -7,34 +8,73 @@
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border, #e2e8f0);
   background: #fff;
+
+  &Main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  &Actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 }
 
-.headerMain {
+.backButton {
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  flex-shrink: 0;
+  padding: 0;
+  border-color: var(--border);
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+  box-shadow: var(--shadow-xs);
+
+  &:hover {
+    background: color-mix(in oklab, var(--muted) 70%, transparent);
+  }
+
+  &Icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--muted-foreground);
+  }
+}
+
+.documentRow {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.fileName {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 40vw;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
-}
-
-.headerActions {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+
+  .fileName {
+    max-width: 40vw;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+}
+
+.cancelButton {
+  padding-inline: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  box-shadow: var(--shadow-xs);
 }

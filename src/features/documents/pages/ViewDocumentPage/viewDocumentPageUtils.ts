@@ -14,7 +14,22 @@ import {
  */
 export const PDF_SCREENSHOT_OCR_SCALE = 2;
 
-export const CONFIDENCE_WARN = 0.7;
+/** Warn when normalized confidence is below this (0–100 scale, ~70%). */
+export const CONFIDENCE_WARN_MIN_PERCENT = 70;
+
+/**
+ * Maps stored OCR confidence to a 0–100 value. Tesseract line confidence is 0–100;
+ * values in [0, 1] are treated as fractions; values in (100, 10_000] heal a mistaken ×100.
+ */
+export function confidencePercentFromStored(raw: number): number {
+  let v = raw;
+  if (v >= 0 && v <= 1) {
+    v *= 100;
+  } else if (v > 100 && v <= 10_000) {
+    v /= 100;
+  }
+  return Math.min(100, Math.max(0, v));
+}
 
 export const FIELD_LABELS: Record<ExtractionFieldKey, string> = {
   name: "Name",
@@ -37,12 +52,15 @@ export function confidenceLabelForField(
   if (values.length === 0) {
     return "Unknown";
   }
-  const minV = Math.min(...values);
-  return `${Math.round(minV * 100)}%`;
+  const minPct = Math.min(...values.map(confidencePercentFromStored));
+  return `${Math.round(minPct)}%`;
 }
 
 export function isWarnConfidence(confidence: number | null): boolean {
-  return confidence == null || confidence < CONFIDENCE_WARN;
+  if (confidence == null) {
+    return true;
+  }
+  return confidencePercentFromStored(confidence) < CONFIDENCE_WARN_MIN_PERCENT;
 }
 
 export function pagesFromContent(data: GetDocumentContentResponse): number[] {

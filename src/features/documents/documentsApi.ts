@@ -18,6 +18,8 @@ export type DocumentListItem = {
   patient?: string;
   category?: string;
   progress: number;
+  /** 0–100 when present; null when no OCR confidence is available. */
+  confidence: number | null;
   status: DocumentProcessingStatus;
 };
 

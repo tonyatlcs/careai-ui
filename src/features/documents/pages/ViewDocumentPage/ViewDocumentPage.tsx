@@ -9,7 +9,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ExtractionFieldKey, ExtractionFields } from "@/features/documents/documentContentTypes";
 import {
@@ -27,14 +26,11 @@ import { PageRail } from "@/features/documents/pages/ViewDocumentPage/components
 import styles from "@/features/documents/pages/ViewDocumentPage/ViewDocumentPage.module.scss";
 import { usePdfRailThumbnails } from "@/features/documents/pages/ViewDocumentPage/usePdfRailThumbnails";
 import { firstBoxPageForField, pagesFromContent } from "@/features/documents/pages/ViewDocumentPage/viewDocumentPageUtils";
-import type { RootState } from "@/store";
-
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export const ViewDocumentPage: React.FC = () => {
   const { documentId = "" } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
-  const documentIds = useSelector((s: RootState) => s.documents.documentIds);
 
   const {
     data: content,
@@ -268,23 +264,6 @@ export const ViewDocumentPage: React.FC = () => {
     await persist();
   };
 
-  const handleConfirmNext = async () => {
-    if (form && dirtyComputed) {
-      await persist();
-    }
-    const idx = documentIds.indexOf(documentId);
-    if (idx < 0) {
-      navigate("/documents");
-      return;
-    }
-    const nextId = idx < documentIds.length - 1 ? documentIds[idx + 1] : null;
-    if (nextId) {
-      navigate(`/documents/${nextId}`);
-    } else {
-      navigate("/documents");
-    }
-  };
-
   const handleFieldFocus = (field: ExtractionFieldKey) => {
     setFocusedField(field);
     if (content) {
@@ -302,12 +281,10 @@ export const ViewDocumentPage: React.FC = () => {
   return (
     <div className={styles.page}>
       <DocumentReviewHeader
-        confirmDisabled={patchLoading}
         documentName={content?.documentName}
         patchLoading={patchLoading}
         saveDisabled={!dirtyComputed || !form || patchLoading}
         onCancel={() => navigate("/documents")}
-        onConfirmNext={handleConfirmNext}
         onSave={handleSave}
       />
 
