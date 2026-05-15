@@ -231,7 +231,7 @@ export function DocumentsTable({
               />
             </th>
             <th className={styles.headerCell}>Document name</th>
-            <th className={styles.headerCell}>Patient/client</th>
+            <th className={styles.headerCell}>Patient Name</th>
             <th className={styles.headerCell}>Category suggestion</th>
             <th className={styles.headerCell}>Confidence</th>
             <th className={styles.headerCell}>Status</th>
